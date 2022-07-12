@@ -10,21 +10,25 @@ public class NetworkMatch : MonoBehaviour
     //Clasic vars
     public Transform VehicleSpawnPoint;
     public int MaxVehiclesToSpawn;
-
     public bool ConectionStatus = false;
+    
     //Ui members
     public Transform ServerShellRoot;
     public Transform MatchesHolder;
     public GameObject matchUIdelegate;
+    [Space(10)]
+
     public Button CreateMatch;
     public Button SpawnPlayerBtn;
     public Button RefreshList;
     public Button ToggleConnect;
+    [Space(10)]
     public InputField ServerIpInputField;
     public InputField ServerPortInputField;
     public InputField ClientPortInputField;
     public InputField MatchName;
     public Text PingText;
+
     //DEPENDENCIES
     // public DAC.IInputManager InputManagerService;
     // public DAC.IPlayerManager PlayerManager;

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 #if ENABLE_INPUT_SYSTEM && STARTER_ASSETS_PACKAGES_CHECKED
 using UnityEngine.InputSystem;
 #endif
@@ -71,6 +72,9 @@ namespace StarterAssets
 		private CharacterController _controller;
 		private StarterAssetsInputs _input;
 		private GameObject _mainCamera;
+		private Animator _animator;
+		private static readonly int IsWalking = Animator.StringToHash("isWalking");
+		private static readonly int IsRunning = Animator.StringToHash("isRunning");
 
 		private const float _threshold = 0.01f;
 
@@ -97,6 +101,7 @@ namespace StarterAssets
 
 		private void Start()
 		{
+			_animator = gameObject.GetComponentInChildren<Animator>();
 			_controller = GetComponent<CharacterController>();
 			_input = GetComponent<StarterAssetsInputs>();
 #if ENABLE_INPUT_SYSTEM && STARTER_ASSETS_PACKAGES_CHECKED
@@ -161,6 +166,9 @@ namespace StarterAssets
 			// note: Vector2's == operator uses approximation so is not floating point error prone, and is cheaper than magnitude
 			// if there is no input, set the target speed to 0
 			if (_input.move == Vector2.zero) targetSpeed = 0.0f;
+
+			_animator.SetBool(IsRunning, Math.Abs(targetSpeed - SprintSpeed) < 0.0001);
+			_animator.SetBool(IsWalking, targetSpeed > 0.0f);
 
 			// a reference to the players current horizontal velocity
 			float currentHorizontalSpeed = new Vector3(_controller.velocity.x, 0.0f, _controller.velocity.z).magnitude;

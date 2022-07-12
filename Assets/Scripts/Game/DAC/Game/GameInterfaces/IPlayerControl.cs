@@ -15,7 +15,7 @@ public interface IPlayerControl
     //For cameras
     Vector2 CameraAxis();
     int PlayerID();
-    PlayerType CurrentPlayerType();
+    //PlayerType CurrentPlayerType();
     void SetVehicleTransform(UnityEngine.Transform transform);
 }
 

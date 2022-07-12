@@ -126,9 +126,9 @@ public class KeyboardController : MonoBehaviour, IPlayerControl
         //StartCoroutine("sendPackets");
     }
 
-    public PlayerType CurrentPlayerType()
-    {
-      return PlayerType.LOCAL;
-    }
+    //public PlayerType CurrentPlayerType()
+    //{
+    //  return PlayerType.LOCAL;
+    //}
 }
 

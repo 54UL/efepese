@@ -6,46 +6,57 @@ namespace EPS
     public class NetworkPlayer : NetworkBehaviour
     {
         public Transform spawnPoint;
-        public Transform lookAtPos;
-        public float CurrentHealth;
+        
+        public float CurrentHealth = 100;
         public float Damage = 10;
 
         public IPlayerControl currentControl;
-        public FirstPersonController fpc;
+        public BasicFPP fpc;
 
         //Network vars
         public NetworkVariable<Vector3> Position = new NetworkVariable<Vector3>();
         public NetworkVariable<bool> IsAlive = new NetworkVariable<bool>();
+        public Camera cameraControl;
+  
 
         public override void OnNetworkSpawn()
         {
-            MoveToSpawn(); // Move to spawn point
+            //MoveToSpawn(); // Move to spawn point
+            PreparePlayer();
         }
 
         public void PreparePlayer()
         {
-            // show fpp and camera controllers
-            // hide fpp and camera controllers (just keep active the character)        
+            if (IsOwner)
+            {
+                fpc.enabled = true;
+                cameraControl.enabled = true;
+            }
+            else
+            {
+                fpc.enabled = false;
+                cameraControl.enabled = false;
+            }
         }
 
         public void MoveToSpawn()
         {
-           
             transform.position = spawnPoint.transform.position;
-            Position.Value = Position;
+            Position.Value =  transform.position;
         }
 
         public void DecreaseHealth(NetworkPlayer player, float value)
         {
-            player.currentHealth -= value;
-            player.UpdatePlayerHealthClientRpc(targetObject.currentHealth);
+            player.CurrentHealth -= value;
+            player.UpdatePlayerHealthClientRpc(player.CurrentHealth);
         }
 
-        public void shootSomeOne(GameObject target){
+        public void ShootSomeOne(GameObject target){
             var networkPlayer = target.GetComponent<NetworkPlayer>();
-            if (isClient){
-                ShootServerRpc(networkPlayer)
-            } else{
+            if (IsClient){
+                ShootServerRpc(networkPlayer);
+            }
+            else{
                 DecreaseHealth(networkPlayer,Damage);
             }
         }
@@ -55,7 +66,7 @@ namespace EPS
         {
             if (target.TryGet(out NetworkPlayer targetObject))
             {
-                DecreaseHealth(Damage);
+                DecreaseHealth(targetObject, Damage);
             }
             else
             {
@@ -64,10 +75,10 @@ namespace EPS
         }
 
         [ClientRpc]
-        void UpdatePlayerHealthClientRpc(int healthValue)
+        void UpdatePlayerHealthClientRpc(float healthValue)
         {
-            Debug.Log("Updated damage: "+healthValue);
-            currentHealth = healthValue;
+            Debug.Log("Updated damage: " + healthValue);
+            CurrentHealth = healthValue;
             //If death just despawn the dude???
         }
 
@@ -77,7 +88,7 @@ namespace EPS
         }
 
         void Update(){
-            // fp.OnFire += shootServerRpc;// args: hit,time
+            fpc.OnBulletHit += ShootSomeOne;// args: hit,time(comming soon)
             // fp.onReload += reloadGunServerRpc; //args: bullets
             // fp.onDamageTaken += damageTakenServerRpc;// arg: damage_taken, suspect
         }

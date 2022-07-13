@@ -59,9 +59,12 @@ public class BasicFPP : MonoBehaviour
     public GameObject muzzleFlash;
     public GameObject impactPoint;
 
-    private float nextFire;                                         
+    private float nextFire;                   
+    
     public delegate void BulletHit(GameObject target);
     public event BulletHit OnBulletHit;
+
+    public bool mouselookenabled;
     private Vector3 hitPos;
 
     public void OnDrawGizmos()
@@ -88,8 +91,8 @@ public class BasicFPP : MonoBehaviour
                 // Set the end position for our laser line 
                 hitPos = hit.point;
                 impactPoint.transform.position = hit.point;
-                //if (OnBulletHit != null)
-                    //OnBulletHit(hit.transform.gameObject);
+                if (OnBulletHit != null)
+                    OnBulletHit(hit.transform.gameObject);
             }
             else
             {
@@ -117,7 +120,7 @@ public class BasicFPP : MonoBehaviour
 
     void FPPinput()//Gets all input of the keyboard and mouse 
     {
-        //MOUSE 
+        //MOUSE     
         MouseLook.MouseX += Input.GetAxis("Mouse X") * MouseLook.LookSpeed;
         MouseLook.MouseY -= Input.GetAxis("Mouse Y") * MouseLook.LookSpeed;
         //Keyboard
@@ -130,19 +133,22 @@ public class BasicFPP : MonoBehaviour
         //Mouse look
         //el transform actual deberia ser la camara
         //Creaamos las interpolaciones necesarias pero primero hacemos el clamp
-        MouseLook.MouseY = Mathf.Clamp(MouseLook.MouseY, -MouseLook.VerticalAxisLimit, MouseLook.VerticalAxisLimit);
-        MouseLook.MouseXlerp = Mathf.Lerp(MouseLook.MouseXlerp, MouseLook.MouseX, MouseLook.HorizontalLerpSpeed * Time.deltaTime);
-        MouseLook.MouseYlerp = Mathf.Lerp(MouseLook.MouseYlerp, MouseLook.MouseY, MouseLook.VerticalLerpSpeed * Time.deltaTime);
+
+        if (mouselookenabled)
+        {
+            MouseLook.MouseY = Mathf.Clamp(MouseLook.MouseY, -MouseLook.VerticalAxisLimit, MouseLook.VerticalAxisLimit);
+            MouseLook.MouseXlerp = Mathf.Lerp(MouseLook.MouseXlerp, MouseLook.MouseX, MouseLook.HorizontalLerpSpeed * Time.deltaTime);
+            MouseLook.MouseYlerp = Mathf.Lerp(MouseLook.MouseYlerp, MouseLook.MouseY, MouseLook.VerticalLerpSpeed * Time.deltaTime);
+        }
       
         //asginamos valores
-        transform.localRotation = Quaternion.Euler(new Vector3(MouseLook.MouseYlerp, 0, 0));//Camra
+        transform.localRotation = Quaternion.Euler(new Vector3(MouseLook.MouseYlerp, 0, 0));//Camara
         MouseLook.MainBody.transform.rotation = Quaternion.Euler(new Vector3(0, MouseLook.MouseXlerp, 0));//body
     
         //Movement Control
         Vector3 MovementDirection = new Vector3(MovementControl.InputX * MovementControl.HorizontalSpeed, 0, MovementControl.InpuY * MovementControl.VerticalSpeed);
         Vector3 Dir = MouseLook.MainBody.transform.TransformDirection(MovementDirection);
         MouseLook.MainBody.GetComponent<CharacterController>().SimpleMove(Dir);
-
     }
 
     //Output methods
@@ -157,9 +163,15 @@ public class BasicFPP : MonoBehaviour
             lockState = !lockState;
         
         if (lockState)
+        {
             Cursor.lockState = CursorLockMode.Locked;
+            mouselookenabled = lockState;
+        }
         else
+        {
+            mouselookenabled = false;
             Cursor.lockState = CursorLockMode.None;
+        }
 
         FPPinput();
         OnGround();

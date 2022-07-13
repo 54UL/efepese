@@ -58,7 +58,6 @@ public class BasicFPP : MonoBehaviour
     private AudioSource gunAudio;                            
     public GameObject muzzleFlash;
     public GameObject impactPoint;
-
     private float nextFire;                   
     
     public delegate void BulletHit(GameObject target);

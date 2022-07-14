@@ -10,7 +10,6 @@ public class WeaponSystem : MonoBehaviour
 {
     //PUBLIC VARS
     public Transform gunEnd;
-    public Camera fpsCam;
     public GameObject muzzleFlash;
     public GameObject impactPoint;    
     public PlayerInput _playerInput;
@@ -19,7 +18,7 @@ public class WeaponSystem : MonoBehaviour
     public float weaponRange = 50f;                                 
     public float hitForce = 100f;                                                             
     public bool mouselookenabled;
-    public InputAction fireAction;
+    //public InputAction fireAction;
 
     //PRIVATE VARS
     private float nextFire;                   
@@ -41,7 +40,7 @@ public class WeaponSystem : MonoBehaviour
     void WeaponLogic()
     {
         // Check if the player has pressed the fire button and if enough time has elapsed since they last fired
-        if (Mouse.current.rightButton.isPressed && Time.time > nextFire)
+        if (Mouse.current.leftButton.isPressed && Time.time > nextFire)
         {
             // Update the time when our player can fire next
             nextFire = Time.time + fireRate;
@@ -50,20 +49,40 @@ public class WeaponSystem : MonoBehaviour
             RaycastHit hit;
 
             // Check if our raycast has hit anything
-            if (Physics.Raycast(fpsCam.transform.position, fpsCam.transform.forward, out hit, weaponRange))
+            if (Physics.Raycast(gunEnd.transform.position, gunEnd.transform.forward, out hit, weaponRange))
             {
                 // Set the end position for our laser line 
-                impactPoint.SetActive(true);
+                //impactPoint.SetActive(true);
                 hitPos = hit.point;
-                impactPoint.transform.position = hit.point;
+                //impactPoint.transform.position = hit.point;
                 if (OnBulletHit != null)
                     OnBulletHit(hit.transform.gameObject);
+
+                // Check if the object we hit has a rigidbody attached
+                if (hit.rigidbody != null)
+                {
+                    // Add force to the rigidbody we hit, in the direction from which it was hit
+                    hit.rigidbody.AddForce(-hit.normal * hitForce);
+                }
             }
             else
             {
                 hitPos = Vector3.zero;
-                impactPoint.SetActive(false);
+                //impactPoint.SetActive(false);
             }
+        }
+    }
+
+    void WeaponAnimation()
+    {
+        
+    }
+
+    void WeaponAim()
+    {
+        if (Mouse.current.rightButton.isPressed)
+        {
+
         }
     }
 
@@ -74,7 +93,7 @@ public class WeaponSystem : MonoBehaviour
 
         // Turn on our line renderer
         muzzleFlash.SetActive(true);
-        impactPoint.SetActive(true);
+        //impactPoint.SetActive(true);
         //Wait for .07 seconds
         yield return shotDuration;
 
@@ -85,8 +104,7 @@ public class WeaponSystem : MonoBehaviour
 
     private void Start()
     {
-        playerInput = GetComponent<PlayerInput>();
-        fireAction = playerInput.actions["Shoot"];
+   
     }
 
     private void Update()

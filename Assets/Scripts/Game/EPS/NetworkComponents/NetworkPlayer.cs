@@ -11,7 +11,7 @@ namespace EPS
         public float Damage = 10;
 
         public IPlayerControl currentControl;
-        public BasicFPP fpc;
+        public FirstPersonPlayer fpp;
 
         //Network vars
         public NetworkVariable<Vector3> Position = new NetworkVariable<Vector3>();
@@ -29,7 +29,7 @@ namespace EPS
         {
             if (IsOwner)
             {
-                fpc.enabled = true;
+                fpp.enabled = true;
                 cameraControl.enabled = true;
 
 
@@ -38,7 +38,7 @@ namespace EPS
             }
             else
             {
-                fpc.enabled = false;
+                fpp.enabled = false;
                 cameraControl.enabled = false;
             }
         }
@@ -92,7 +92,7 @@ namespace EPS
         }
 
         void Update(){
-            fpc.OnBulletHit += ShootSomeOne;// args: hit,time(comming soon)
+            //fpp.OnBulletHit += ShootSomeOne;// args: hit,time(comming soon)
             // fp.onReload += reloadGunServerRpc; //args: bullets
             // fp.onDamageTaken += damageTakenServerRpc;// arg: damage_taken, suspect
         }

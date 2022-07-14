@@ -1,5 +1,5 @@
 
-public interface IWeapon()
+public interface IWeapon
 {
     void Draw();
     void Undraw();

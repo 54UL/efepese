@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.Serialization;
+
 #if ENABLE_INPUT_SYSTEM && STARTER_ASSETS_PACKAGES_CHECKED
 using UnityEngine.InputSystem;
 #endif
@@ -11,7 +12,7 @@ namespace EPS
 #if ENABLE_INPUT_SYSTEM && STARTER_ASSETS_PACKAGES_CHECKED
 	[RequireComponent(typeof(PlayerInput))]
 #endif
-	public class FirstPersonController : MonoBehaviour
+	public class FirstPersonPlayer : MonoBehaviour
 	{
 		[Header("Player")] [Tooltip("Crouch speed of the character in m/s")]
 		public float crouchSpeed = 1.5f;
@@ -70,12 +71,13 @@ namespace EPS
 		private PlayerInput _playerInput;
 #endif
 		private CharacterController _controller;
-		private StarterAssetsInputs _input;
+		private StarterAssets.StarterAssetsInputs _input;
 		private GameObject _mainCamera;
 		private Animator _animator;
 		private static readonly int VelocityZ = Animator.StringToHash("VelocityZ");
 		private static readonly int VelocityX = Animator.StringToHash("VelocityX");
-		
+		private bool lockState;
+
 		private const float Threshold = 0.01f;
 
 		private bool IsCurrentDeviceMouse
@@ -103,7 +105,7 @@ namespace EPS
 		{
 			_animator = gameObject.GetComponentInChildren<Animator>();
 			_controller = GetComponent<CharacterController>();
-			_input = GetComponent<StarterAssetsInputs>();
+			_input = GetComponent<StarterAssets.StarterAssetsInputs>();
 #if ENABLE_INPUT_SYSTEM && STARTER_ASSETS_PACKAGES_CHECKED
 			_playerInput = GetComponent<PlayerInput>();
 #else
@@ -120,7 +122,13 @@ namespace EPS
 			JumpAndGravity();
 			GroundedCheck();
 			Move();
-		}
+
+            if (Keyboard.current[Key.E].wasPressedThisFrame)
+            {
+                lockState = !lockState;
+                _input.cursorLocked =  lockState;
+            }
+        }
 
 		private void LateUpdate()
 		{
@@ -204,8 +212,8 @@ namespace EPS
 			}
 
 			// animate the player 
-			_animator.SetFloat(VelocityX, velocity.x);
-			_animator.SetFloat(VelocityZ, velocity.z);
+			//_animator.SetFloat(VelocityX, velocity.x);
+			//_animator.SetFloat(VelocityZ, velocity.z);
 			// move the player
 			_controller.Move(inputDirection.normalized * (_speed * Time.deltaTime) + new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
 		}
@@ -221,7 +229,7 @@ namespace EPS
 				if (_verticalVelocity < 0.0f)
 				{
 					_verticalVelocity = -2f;
-				}
+				}     
 
 				// Jump
 				if (_input.jump && _jumpTimeoutDelta <= 0.0f)

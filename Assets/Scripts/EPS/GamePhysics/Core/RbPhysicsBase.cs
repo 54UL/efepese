@@ -4,18 +4,18 @@ namespace EPS.GamePhysics.Core
 {
     public class RbPhysicsBase : MonoBehaviour
     {
-        protected Rigidbody rigidbody;
+        protected Rigidbody Body;
         
         // Start is called before the first frame update
         protected virtual void Start()
         {
-            rigidbody = GetComponent<Rigidbody>();
+            Body = GetComponent<Rigidbody>();
         }
 
         // Update guarantees synchronization with the physics engine
         void FixedUpdate()
         {
-            if (rigidbody)
+            if (Body)
             {
                 HandlePhysics();
             }

@@ -12,6 +12,7 @@ namespace EPS.GamePhysics.Vehicles
 
         private void HandleEngines()
         {
+            Body.drag = 0.05f;
             throw new System.NotImplementedException();
         }
         

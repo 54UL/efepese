@@ -5,6 +5,7 @@ namespace EPS.GamePhysics.Core
     public class RbPhysicsBase : MonoBehaviour
     {
         protected Rigidbody Body;
+        public Transform cog;
         
         // Start is called before the first frame update
         protected virtual void Start()

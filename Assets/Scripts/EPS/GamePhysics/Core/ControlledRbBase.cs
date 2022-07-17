@@ -5,16 +5,18 @@ namespace EPS.GamePhysics.Core
     public class ControlledRbInputControllerBase : InputControllerBase
     {
         protected Rigidbody Body;
+        public Transform cog;
         
         // Start is called before the first frame update
         protected override void Start()
         {
             base.Start();
             Body = GetComponent<Rigidbody>();
+            
         }
 
         // Update guarantees synchronization with the physics engine
-        void FixedUpdate()
+        protected void FixedUpdate()
         {
             if (Body  && input)
             {

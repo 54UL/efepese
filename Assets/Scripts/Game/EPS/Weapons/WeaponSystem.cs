@@ -5,24 +5,35 @@ using System.Collections;
 using UnityEngine.InputSystem;
 #endif
 
-//This was made in 2015 don't blame me 
 public class WeaponSystem : MonoBehaviour
 {
-    //PUBLIC VARS
-    public Transform gunEnd;
+    //Scene objects and prefabs
+    public Transform  gunEnd;
     public GameObject muzzleFlash;
     public GameObject impactPoint;
-    public Transform aimPoint;
-    public float aimSpeed;
+    public Transform  aimPoint;
+    public Transform  gunPivot;
 
+    //RECOIL PROTOTYPE
+    [Header("Recoil system")]
+    //Gun aim 
+    public RecoilConfig currentRecoil;
+    public Vector3 startGunPivotPosition;
+    public Quaternion startGunPivotRotation;
+    public float kickElapsedTime = 0;
+    
+    [Header("Gun sway")]
+    public float swaySpeed = 2;
+    public float elapesedSwayTime = 0;
+
+    [Header("Weapon descriptor")]
+    //Weapon descriptor
     public int gunDamage = 25;
     public float fireRate = 0.25f;                                     
     public float weaponRange = 50f;                                 
     public float hitForce = 100f;                                                             
-    public bool mouselookenabled;
-    //public InputAction fireAction;
 
-    //PRIVATE VARS
+    //Private members
     private float nextFire;                   
     private Vector3 hitPos;
     private WaitForSeconds shotDuration = new WaitForSeconds(0.07f);    
@@ -32,13 +43,6 @@ public class WeaponSystem : MonoBehaviour
     public delegate void BulletHit(GameObject target, float damage);
     public event BulletHit OnBulletHit;
 
-    public void OnDrawGizmos()
-    {
-        Gizmos.color = Color.red;
-        if (hitPos != Vector3.zero)
-            Gizmos.DrawSphere(hitPos,1);
-    }
-
     void WeaponLogic()
     {
         // Check if the player has pressed the fire button and if enough time has elapsed since they last fired
@@ -47,12 +51,14 @@ public class WeaponSystem : MonoBehaviour
             // Update the time when our player can fire next
             nextFire = Time.time + fireRate;
             // Start our ShotEffect coroutine to turn our laser line on and off
-            StartCoroutine(ShotEffect());
+            // StartCoroutine(ShotEffect());
             RaycastHit hit;
 
             // Check if our raycast has hit anything
             if (Physics.Raycast(gunEnd.transform.position, gunEnd.transform.forward, out hit, weaponRange))
             {
+                OnShoot(); //XUL TODO: TEST THIS FIRST...
+                
                 // Set the end position for our laser line 
                 //impactPoint.SetActive(true);
                 hitPos = hit.point;
@@ -62,10 +68,8 @@ public class WeaponSystem : MonoBehaviour
 
                 // Check if the object we hit has a rigidbody attached
                 if (hit.rigidbody != null)
-                {
                     // Add force to the rigidbody we hit, in the direction from which it was hit
                     hit.rigidbody.AddForce(-hit.normal * hitForce);
-                }
             }
             else
             {
@@ -74,6 +78,54 @@ public class WeaponSystem : MonoBehaviour
             }
         }
     }
+
+    void OnShoot()
+    {
+        //If already shooting restart
+        if (kickElapsedTime > 0 ){
+            kickElapsedTime = 0;
+        }
+        
+        //procedural Recoil system
+        float computedYaw = Random.Range(-currentRecoil.yawKickBackAngleRange, currentRecoil.yawKickBackAngleRange);
+        float computedPitch = Random.Range(-currentRecoil.pitchKickBackAngleRange, currentRecoil.pitchKickBackAngleRange);
+        
+        Vector3 kickBackPos = new Vector3(0, 0, currentRecoil.kickBackDistance) + startGunPivotPosition;
+        Quaternion kickBackRot = new Quaternion.Euler(computedPitch, computedYaw, 0) + startGunPivotRotation;
+
+        gunPivot.transform.localPosition = kickBackPos;
+        gunPivot.transform.localRotation = kickBackRot;
+
+        StartCoroutine(KickBackAnimation(startPivotPosition,startGunPivotRotation));
+    }
+    //TODO: TEST
+    private IEnumerator KickBackAnimation(Vector3 kickBackPos,Quaternion kickBackRotation)
+    {
+        while (kickElapsedTime < 1.0)
+        {
+            gunPivot.transform.localPosition = Vector.Lerp(gunPivot.localPosition, kickBackPos, kickElapsedTime);
+            gunPivot.transform.localRotation = Quaternion.Slerp(gunPivot.localRotation, kickBackRotation, kickElapsedTime);
+            kickElapsedTime += Time.deltaTime * currentRecoil.recoilSpringForce;
+            yield return shotDuration;
+        }
+    }
+
+    //TODO: TEST
+    void GunSway(Vector2 lookInput)
+    {
+        Quaternion swayRotation = Quaternion.Euler(lookInput.x,lookInput.y,0);
+        Quaternion newPivotRotation = gunPivot.transform.localRotation + swayRotation;
+        gunPivot.transform.localRotation = Quaternion.Slerp(gunPivot.localRotation, to, Time.deltaTime * swaySpeed);
+    }
+
+    // private IEnumerator SwayAnimation(Quaternion to)
+    // {
+    //     while (elapesedSwayTime < 1.0)
+    //     {
+    //         yield return new WaitForSeconds(0.16);
+    //     }
+    //     elapesedSwayTime = 0;
+    // }
 
     void WeaponAnimation()
     {
@@ -98,15 +150,22 @@ public class WeaponSystem : MonoBehaviour
         //impactPoint.SetActive(true);
         //Wait for .07 seconds
         yield return shotDuration;
-
         // Deactivate our line renderer after waiting
         muzzleFlash.SetActive(false);
         //impactPoint.SetActive(false);
     }
+    
+    public void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        if (hitPos != Vector3.zero)
+            Gizmos.DrawSphere(hitPos, 1);
+    }
 
     private void Start()
     {
-   
+        startGunPivotPosition = gunPivot.transform.localPosition;
+        startGunPivotRotation = gunPivot.transform.localRotation;
     }
 
     private void Update()

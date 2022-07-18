@@ -5,43 +5,45 @@ namespace EPS
 {
     public class NetworkPlayer : NetworkBehaviour
     {
-        public Transform spawnPoint;
-        public float currentHealth = 100;
-        
+        //Game systems
         public IPlayerControl currentControl;
         public WeaponSystem currentWeapon;
         public FirstPersonPlayer fpp;
-        public UnityEngine.InputSystem.PlayerInput playerInput;
+
+        //Game components
+        public Transform spawnPoint;
+        public float currentHealth = 100;   
 
         //Network vars
         public NetworkVariable<Vector3> Position = new NetworkVariable<Vector3>();
         public NetworkVariable<bool> IsAlive = new NetworkVariable<bool>();
         public Camera cameraControl;
   
-
         public override void OnNetworkSpawn()
         {
+            currentWeapon = GetComponent<WeaponSystem>();
             //MoveToSpawn(); // Move to spawn point
             PreparePlayer();
         }
 
+        //Refactor move this to network manager
         private void EnableLocalPlayerComponents(bool enable)
         {
             fpp.enabled = enable;
             cameraControl.enabled = enable;
             currentWeapon.enabled = enable;
-            playerInput.enabled = enable;
             //transform.position = Position.Value;
 
-          
-               currentWeapon.OnBulletHit += ShootSomeOne; // args: hit, damage 
+            if (currentWeapon != null)          
+                currentWeapon.OnBulletHit += ShootSomeOne; // args: hit, damage 
         }
 
         public void PreparePlayer()
         {
-            if (IsOwner)
+            if (IsOwner && IsLocalPlayer)
             {
                 EnableLocalPlayerComponents(true);
+                //Nothing to do...
             }
             else
             {
@@ -99,13 +101,6 @@ namespace EPS
         {
             Debug.Log("Updated damage: " + healthValue);
             currentHealth = healthValue;
-        }
-
-        void Start()
-        {
-            PreparePlayer();
-            currentWeapon = GetComponent<WeaponSystem>();
-            //inputs = GetComponent<StarterAssets.StarterAssetsInputs>();
         }
     }
 }

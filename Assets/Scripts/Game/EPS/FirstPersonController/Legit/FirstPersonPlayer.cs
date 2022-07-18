@@ -72,6 +72,7 @@ namespace EPS
 #endif
 		private CharacterController _controller;
 		private StarterAssets.StarterAssetsInputs _input;
+		private NetworkPlayer _networkPlayer;
 		private GameObject _mainCamera;
 		private Animator _animator;
 		private static readonly int VelocityZ = Animator.StringToHash("VelocityZ");
@@ -106,6 +107,7 @@ namespace EPS
 			_animator = gameObject.GetComponentInChildren<Animator>();
 			_controller = GetComponent<CharacterController>();
 			_input = GetComponent<StarterAssets.StarterAssetsInputs>();
+			_networkPlayer = GetComponent<NetworkPlayer>();
 #if ENABLE_INPUT_SYSTEM && STARTER_ASSETS_PACKAGES_CHECKED
 			_playerInput = GetComponent<PlayerInput>();
 #else
@@ -123,10 +125,12 @@ namespace EPS
 			GroundedCheck();
 			Move();
 
-            if (Keyboard.current[Key.E].wasPressedThisFrame)
+			if (Keyboard.current[Key.E].wasReleasedThisFrame)
             {
                 lockState = !lockState;
-                _input.cursorLocked =  lockState;
+
+				_input.cursorLocked= lockState;
+				_input.cursorInputForLook =  lockState;
             }
         }
 
@@ -284,6 +288,18 @@ namespace EPS
 			// when selected, draw a gizmo in the position of, and matching radius of, the grounded collider
 			var position = transform.position;
 			Gizmos.DrawSphere(new Vector3(position.x, position.y - groundedOffset, position.z), groundedRadius);
+		}
+
+		private void OnGUI()
+		{
+			GUILayout.BeginArea(new Rect(10, 500, 300, 300));
+			
+			var playerHealth = "Death...";
+			if (_networkPlayer.currentHealth >= 0)
+				playerHealth =  _networkPlayer.currentHealth.ToString("f1");
+			
+			GUILayout.Label("Health:" + playerHealth);
+			GUILayout.EndArea();
 		}
 	}
 }

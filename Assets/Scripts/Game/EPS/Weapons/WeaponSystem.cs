@@ -11,9 +11,11 @@ public class WeaponSystem : MonoBehaviour
     //PUBLIC VARS
     public Transform gunEnd;
     public GameObject muzzleFlash;
-    public GameObject impactPoint;    
-    public PlayerInput _playerInput;
-    public int gunDamage = 1;
+    public GameObject impactPoint;
+    public Transform aimPoint;
+    public float aimSpeed;
+
+    public int gunDamage = 25;
     public float fireRate = 0.25f;                                     
     public float weaponRange = 50f;                                 
     public float hitForce = 100f;                                                             
@@ -27,7 +29,7 @@ public class WeaponSystem : MonoBehaviour
     private AudioSource gunAudio;   
    
     //EVENTS
-    public delegate void BulletHit(GameObject target);
+    public delegate void BulletHit(GameObject target, float damage);
     public event BulletHit OnBulletHit;
 
     public void OnDrawGizmos()
@@ -56,7 +58,7 @@ public class WeaponSystem : MonoBehaviour
                 hitPos = hit.point;
                 //impactPoint.transform.position = hit.point;
                 if (OnBulletHit != null)
-                    OnBulletHit(hit.transform.gameObject);
+                    OnBulletHit(hit.transform.gameObject, gunDamage);
 
                 // Check if the object we hit has a rigidbody attached
                 if (hit.rigidbody != null)

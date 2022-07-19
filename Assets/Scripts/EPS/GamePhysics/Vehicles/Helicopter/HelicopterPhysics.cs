@@ -20,7 +20,7 @@ namespace EPS.GamePhysics.Vehicles.Helicopter
             float totalPower = 0.0f;
             foreach (EnginePhysics engine in engines)
             {
-                engine.UpdateEngine(input.jump);
+                engine.UpdateEngine(_inputActions.jump);
                 totalPower += engine.CurrentHorsePower;
                 Debug.Log(totalPower);
             }

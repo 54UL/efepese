@@ -121,12 +121,12 @@ namespace EPS.GamePhysics.Character
 		private void CameraRotation()
 		{
 			// if there is an input
-			if (!(input.look.sqrMagnitude >= Threshold)) return;
+			if (!(_inputActions.look.sqrMagnitude >= Threshold)) return;
 			//Don't multiply mouse input by Time.deltaTime
 			float deltaTimeMultiplier = IsCurrentDeviceMouse ? 1.0f : Time.deltaTime;
 				
-			_cinemachineTargetPitch += input.look.y * rotationSpeed * deltaTimeMultiplier;
-			_rotationVelocity = input.look.x * rotationSpeed * deltaTimeMultiplier;
+			_cinemachineTargetPitch += _inputActions.look.y * rotationSpeed * deltaTimeMultiplier;
+			_rotationVelocity = _inputActions.look.x * rotationSpeed * deltaTimeMultiplier;
 
 			// clamp our pitch rotation
 			_cinemachineTargetPitch = ClampAngle(_cinemachineTargetPitch, bottomClamp, topClamp);
@@ -142,15 +142,15 @@ namespace EPS.GamePhysics.Character
 		{
 			
 			// set target speed based on move speed, sprint speed and if sprint is pressed
-			float targetSpeed = input.sprint ? sprintSpeed : moveSpeed;
+			float targetSpeed = _inputActions.sprint ? sprintSpeed : moveSpeed;
 
 			// set target speed to move speed when walking sideways
 			double tolerance = 0.001;
-			if (Math.Abs(input.move.x + 1) < tolerance || Math.Abs(input.move.x - 1) < tolerance) targetSpeed = moveSpeed;
+			if (Math.Abs(_inputActions.move.x + 1) < tolerance || Math.Abs(_inputActions.move.x - 1) < tolerance) targetSpeed = moveSpeed;
 
 			// note: Vector2's == operator uses approximation so is not floating point error prone, and is cheaper than magnitude
 			// if there is no input, set the target speed to 0
-			if (input.move == Vector2.zero) targetSpeed = 0.0f;
+			if (_inputActions.move == Vector2.zero) targetSpeed = 0.0f;
 
 
 			// a reference to the players current horizontal velocity
@@ -158,7 +158,7 @@ namespace EPS.GamePhysics.Character
 			float currentHorizontalSpeed = new Vector3(velocity.x, 0.0f, velocity.z).magnitude;
 
 			float speedOffset = 0.1f;
-			float inputMagnitude = input.analogMovement ? input.move.magnitude : 1f;
+			float inputMagnitude = _inputActions.analogMovement ? _inputActions.move.magnitude : 1f;
 
 			// accelerate or decelerate to target speed
 			if (currentHorizontalSpeed < targetSpeed - speedOffset || currentHorizontalSpeed > targetSpeed + speedOffset)
@@ -176,7 +176,7 @@ namespace EPS.GamePhysics.Character
 			}
 
 			// normalise input direction
-			Vector3 inputDirection = new Vector3(input.move.x, 0.0f, input.move.y).normalized;
+			Vector3 inputDirection = new Vector3(_inputActions.move.x, 0.0f, _inputActions.move.y).normalized;
 			
 			// animate the player 
 			var transformProp = transform;
@@ -186,10 +186,10 @@ namespace EPS.GamePhysics.Character
 			
 			// note: Vector2's != operator uses approximation so is not floating point error prone, and is cheaper than magnitude
 			// if there is a move input rotate player when the player is moving
-			if (input.move != Vector2.zero)
+			if (_inputActions.move != Vector2.zero)
 			{
 				// move
-				inputDirection = transformProp.right * input.move.x + transformProp.forward * input.move.y;
+				inputDirection = transformProp.right * _inputActions.move.x + transformProp.forward * _inputActions.move.y;
 			}
 
 			// move the player
@@ -210,7 +210,7 @@ namespace EPS.GamePhysics.Character
 				}
 
 				// Jump
-				if (input.jump && _jumpTimeoutDelta <= 0.0f)
+				if (_inputActions.jump && _jumpTimeoutDelta <= 0.0f)
 				{
 					// the square root of H * -2 * G = how much velocity needed to reach desired height
 					_verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * gravity);
@@ -234,7 +234,7 @@ namespace EPS.GamePhysics.Character
 				}
 
 				// if we are not grounded, do not jump
-				input.jump = false;
+				_inputActions.jump = false;
 			}
 
 			// apply gravity over time if under terminal (multiply by delta time twice to linearly speed up over time)

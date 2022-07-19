@@ -18,7 +18,7 @@ namespace EPS.GamePhysics.Core
         // Update guarantees synchronization with the physics engine
         protected void FixedUpdate()
         {
-            if (Body  && input)
+            if (Body  && _inputActions)
             {
                 HandlePhysics();
             }

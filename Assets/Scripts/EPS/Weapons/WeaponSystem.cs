@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using EPS.Core.Services.Implementations;
 
 #if ENABLE_INPUT_SYSTEM && STARTER_ASSETS_PACKAGES_CHECKED
 using UnityEngine.InputSystem;
@@ -13,18 +14,23 @@ public class WeaponSystem : MonoBehaviour
     public GameObject impactPoint;
     public Transform  aimPoint;
     public Transform  gunPivot;
+    public Transform gunModel;
+    public InputSystem.PlayerActions _input;
 
     //RECOIL PROTOTYPE
     [Header("Recoil system")]
     //Gun aim 
-    public RecoilConfig currentRecoil;
+    public EPS.RecoilConfig currentRecoil;
     public Vector3 startGunPivotPosition;
     public Quaternion startGunPivotRotation;
+    public Quaternion startMoodelRotation;
     public float kickElapsedTime = 0;
     
     [Header("Gun sway")]
-    public float swaySpeed = 2;
-    public float elapesedSwayTime = 0;
+    public float swaySpeed = 10;
+
+    [Header("Gun Aim")]
+    public float aimSpeed = 10;
 
     [Header("Weapon descriptor")]
     //Weapon descriptor
@@ -58,7 +64,7 @@ public class WeaponSystem : MonoBehaviour
             if (Physics.Raycast(gunEnd.transform.position, gunEnd.transform.forward, out hit, weaponRange))
             {
                 OnShoot(); //XUL TODO: TEST THIS FIRST...
-                
+                StartCoroutine(ShotEffect());
                 // Set the end position for our laser line 
                 //impactPoint.SetActive(true);
                 hitPos = hit.point;
@@ -82,41 +88,65 @@ public class WeaponSystem : MonoBehaviour
     void OnShoot()
     {
         //If already shooting restart
-        if (kickElapsedTime > 0 ){
+        if (kickElapsedTime > 0)
+        {
             kickElapsedTime = 0;
         }
-        
+
         //procedural Recoil system
         float computedYaw = Random.Range(-currentRecoil.yawKickBackAngleRange, currentRecoil.yawKickBackAngleRange);
         float computedPitch = Random.Range(-currentRecoil.pitchKickBackAngleRange, currentRecoil.pitchKickBackAngleRange);
         
         Vector3 kickBackPos = new Vector3(0, 0, currentRecoil.kickBackDistance) + startGunPivotPosition;
-        Quaternion kickBackRot = new Quaternion.Euler(computedPitch, computedYaw, 0) + startGunPivotRotation;
+        Quaternion kickBackRot = Quaternion.Euler(computedPitch, computedYaw, 0) * startGunPivotRotation;
 
         gunPivot.transform.localPosition = kickBackPos;
         gunPivot.transform.localRotation = kickBackRot;
 
-        StartCoroutine(KickBackAnimation(startPivotPosition,startGunPivotRotation));
+        StartCoroutine(KickBackAnimation(startGunPivotPosition, startGunPivotRotation, currentRecoil.recoilSpringForce));
     }
-    //TODO: TEST
-    private IEnumerator KickBackAnimation(Vector3 kickBackPos,Quaternion kickBackRotation)
+
+    void KickInInterpolation(Vector3 kickBackPosition, Quaternion kickBackRotation )
+    {
+        gunPivot.transform.localPosition = Vector3.Lerp(gunPivot.localPosition, kickBackPosition, Time.smoothDeltaTime * swaySpeed);
+        gunPivot.transform.localRotation = Quaternion.Slerp(gunPivot.localRotation, kickBackRotation, Time.smoothDeltaTime * swaySpeed);
+    }
+
+    private IEnumerator KickBackAnimation(Vector3 kickBackPos,Quaternion kickBackRotation, float force)
     {
         while (kickElapsedTime < 1.0)
         {
-            gunPivot.transform.localPosition = Vector.Lerp(gunPivot.localPosition, kickBackPos, kickElapsedTime);
+            gunPivot.transform.localPosition = Vector3.Lerp(gunPivot.localPosition, kickBackPos, kickElapsedTime);
             gunPivot.transform.localRotation = Quaternion.Slerp(gunPivot.localRotation, kickBackRotation, kickElapsedTime);
-            kickElapsedTime += Time.deltaTime * currentRecoil.recoilSpringForce;
+            kickElapsedTime += Time.smoothDeltaTime * force;
             yield return shotDuration;
         }
+        //kickElapsedTime = 0;
     }
 
+
     //TODO: TEST
+    
+    
     void GunSway(Vector2 lookInput)
     {
-        Quaternion swayRotation = Quaternion.Euler(lookInput.x,lookInput.y,0);
-        Quaternion newPivotRotation = gunPivot.transform.localRotation + swayRotation;
-        gunPivot.transform.localRotation = Quaternion.Slerp(gunPivot.localRotation, to, Time.deltaTime * swaySpeed);
+        Vector3 swayRotation = startMoodelRotation.eulerAngles;
+        Quaternion newPivotRotation = Quaternion.Euler(swayRotation.x + lookInput.y, swayRotation.y + lookInput.x, 0); ;
+        gunModel.localRotation = Quaternion.Slerp(gunModel.localRotation,newPivotRotation, Time.smoothDeltaTime * swaySpeed);
     }
+
+    void GunAim(bool aim)
+    {
+        Vector3 target;
+
+        if (aim)
+            target = aimPoint.localPosition;
+        else
+            target = startGunPivotPosition;
+
+            gunPivot.transform.localPosition = Vector3.Lerp(gunPivot.localPosition, target, aimSpeed * Time.smoothDeltaTime);
+    }
+
 
     // private IEnumerator SwayAnimation(Quaternion to)
     // {
@@ -134,6 +164,7 @@ public class WeaponSystem : MonoBehaviour
 
     void WeaponAim()
     {
+        
         if (Mouse.current.rightButton.isPressed)
         {
 
@@ -159,17 +190,32 @@ public class WeaponSystem : MonoBehaviour
     {
         Gizmos.color = Color.red;
         if (hitPos != Vector3.zero)
-            Gizmos.DrawSphere(hitPos, 1);
+            Gizmos.DrawSphere(hitPos, 0.1f);
     }
 
     private void Start()
     {
+        var inputService = EPS.ServiceInjector.getSingleton<InputService>();
+        _input = inputService.GetInputActions();
         startGunPivotPosition = gunPivot.transform.localPosition;
         startGunPivotRotation = gunPivot.transform.localRotation;
+        startMoodelRotation = gunModel.localRotation; 
     }
 
-    private void Update()
+
+    public Vector2 lookAcceleration;
+    private void LateUpdate()
     {
+        var aim = Mouse.current.rightButton.isPressed;
+        var aimRelased = Mouse.current.rightButton.wasReleasedThisFrame;
+
+        if (aim)
+            GunAim(true);
+
+        if (aimRelased)
+            GunAim(false);//Start corrutine instead!
+        
+        GunSway(_input.look);
         WeaponLogic();
     }
 }

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections;
-using InputSystem;
 using UnityEngine.InputSystem;
 using Object = UnityEngine.Object;
+using InputSystem;
 
 namespace EPS.Core.Services.Implementations
 {
@@ -26,7 +26,6 @@ namespace EPS.Core.Services.Implementations
         
         public string ReferencedName()
         {
-            
             return this.GetType().ToString();
         }
 
@@ -44,12 +43,12 @@ namespace EPS.Core.Services.Implementations
 
         public void OnDestroy()
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         public void OnReset()
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         public Func<IEnumerator> LoopCourrutine()

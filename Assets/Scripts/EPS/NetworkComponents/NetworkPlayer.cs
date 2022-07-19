@@ -1,5 +1,6 @@
 using Unity.Netcode;
 using UnityEngine;
+using EPS.GamePhysics.Character;
 
 namespace EPS
 {
@@ -8,7 +9,7 @@ namespace EPS
         //Game systems
         public IPlayerControl currentControl;
         public WeaponSystem currentWeapon;
-        public FirstPersonPlayer fpp;
+        public FirstPersonController fpp;
 
         //Game components
         public Transform spawnPoint;

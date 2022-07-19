@@ -1,8 +1,8 @@
 
 using EPS.Core.Services.Implementations;
-using InputSystem;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using InputSystem;
 
 namespace EPS.GamePhysics.Core
 {

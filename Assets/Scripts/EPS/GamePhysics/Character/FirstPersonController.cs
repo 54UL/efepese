@@ -70,7 +70,7 @@ namespace EPS.GamePhysics.Character
 		
 		private CharacterController _controller;
 		private GameObject _mainCamera;
-		private Animator _animator;
+		public Animator _animator;
 		private static readonly int VelocityZ = Animator.StringToHash("VelocityZ");
 		private static readonly int VelocityX = Animator.StringToHash("VelocityX");
 
@@ -88,7 +88,7 @@ namespace EPS.GamePhysics.Character
 		protected override void Start()
 		{
 			base.Start();
-			_animator = gameObject.GetComponentInChildren<Animator>();
+			
 			_controller = GetComponent<CharacterController>();
 
 
@@ -180,12 +180,12 @@ namespace EPS.GamePhysics.Character
 			// animate the player 
 			var transformProp = transform;
 			var playerVelocity = transformProp.rotation * new Vector3(-velocity.x, 0.0f, velocity.z);
-			//_animator.SetFloat(VelocityX, playerVelocity.x);
-			//_animator.SetFloat(VelocityZ, playerVelocity.z);
-			
-			// note: Vector2's != operator uses approximation so is not floating point error prone, and is cheaper than magnitude
-			// if there is a move input rotate player when the player is moving
-			if (_inputActions.move != Vector2.zero)
+            _animator.SetFloat(VelocityX, playerVelocity.x);
+            _animator.SetFloat(VelocityZ, playerVelocity.z);
+
+            // note: Vector2's != operator uses approximation so is not floating point error prone, and is cheaper than magnitude
+            // if there is a move input rotate player when the player is moving
+            if (_inputActions.move != Vector2.zero)
 			{
 				// move
 				inputDirection = transformProp.right * _inputActions.move.x + transformProp.forward * _inputActions.move.y;

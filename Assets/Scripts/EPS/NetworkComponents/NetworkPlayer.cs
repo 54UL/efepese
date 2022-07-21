@@ -10,6 +10,9 @@ namespace EPS
         public IPlayerControl currentControl;
         public WeaponSystem currentWeapon;
         public FirstPersonController fpp;
+        public GameObject root;
+        public GameObject camera;
+        public GameObject gunPivot;
 
         //Game components
         public Transform spawnPoint;
@@ -22,33 +25,46 @@ namespace EPS
   
         public override void OnNetworkSpawn()
         {
-            currentWeapon = GetComponent<WeaponSystem>();
             //MoveToSpawn(); // Move to spawn point
             PreparePlayer();
         }
 
+
+       [ServerRpc]
+       private void EnableComponentsServerRpc(bool enabled)
+        {
+            EnableLocalPlayerComponentsClientRpc(enabled);
+        }
+
+        [ClientRpc]
         //Refactor move this to network manager
-        private void EnableLocalPlayerComponents(bool enable)
+        private void EnableLocalPlayerComponentsClientRpc(bool enable)
         {
             fpp.enabled = enable;
             cameraControl.enabled = enable;
             currentWeapon.enabled = enable;
+            
             //transform.position = Position.Value;
 
-            if (currentWeapon != null)          
-                currentWeapon.OnBulletHit += ShootSomeOne; // args: hit, damage 
+            //if (currentWeapon != null && enable)          
+            //    currentWeapon.OnBulletHit += ShootSomeOne; // args: hit, damage 
         }
 
         public void PreparePlayer()
         {
-            if (IsOwner && IsLocalPlayer)
+            if (IsOwner)
             {
-                EnableLocalPlayerComponents(true);
-                //Nothing to do...
+                fpp.enabled = true;
+                camera.SetActive(true);
+                currentWeapon.enabled = true;
+                //root.layer &= LayerMask.GetMask("default");
+
             }
             else
             {
-                EnableLocalPlayerComponents(false);
+                fpp.enabled = false;
+                camera.SetActive(false);
+                currentWeapon.enabled = false;
             }
         }
 

@@ -64,7 +64,7 @@ public class WeaponSystem : MonoBehaviour
             if (Physics.Raycast(gunEnd.transform.position, gunEnd.transform.forward, out hit, weaponRange))
             {
                 OnShoot(); //XUL TODO: TEST THIS FIRST...
-                StartCoroutine(ShotEffect());
+                //StartCoroutine(ShotEffect());
                 // Set the end position for our laser line 
                 //impactPoint.SetActive(true);
                 hitPos = hit.point;
@@ -121,7 +121,7 @@ public class WeaponSystem : MonoBehaviour
             kickElapsedTime += Time.smoothDeltaTime * force;
             yield return shotDuration;
         }
-        //kickElapsedTime = 0;
+        //kickElapsedTime = 0;s
     }
 
 
@@ -135,18 +135,16 @@ public class WeaponSystem : MonoBehaviour
         gunModel.localRotation = Quaternion.Slerp(gunModel.localRotation,newPivotRotation, Time.smoothDeltaTime * swaySpeed);
     }
 
-    void GunAim(bool aim)
+
+    void GunAim()
     {
-        Vector3 target;
-
-        if (aim)
-            target = aimPoint.localPosition;
-        else
-            target = startGunPivotPosition;
-
-            gunPivot.transform.localPosition = Vector3.Lerp(gunPivot.localPosition, target, aimSpeed * Time.smoothDeltaTime);
+        gunPivot.transform.localPosition = Vector3.Lerp(gunPivot.localPosition, aimPoint.localPosition, aimSpeed * Time.smoothDeltaTime);     
     }
 
+    void AimIdle()
+    {
+        gunPivot.transform.localPosition = Vector3.Lerp(gunPivot.localPosition, startGunPivotPosition, aimSpeed * Time.smoothDeltaTime);
+    }
 
     // private IEnumerator SwayAnimation(Quaternion to)
     // {
@@ -210,11 +208,10 @@ public class WeaponSystem : MonoBehaviour
         var aimRelased = Mouse.current.rightButton.wasReleasedThisFrame;
 
         if (aim)
-            GunAim(true);
+            GunAim();
+        else
+            AimIdle();
 
-        if (aimRelased)
-            GunAim(false);//Start corrutine instead!
-        
         GunSway(_input.look);
         WeaponLogic();
     }

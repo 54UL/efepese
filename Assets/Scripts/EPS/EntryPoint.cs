@@ -10,7 +10,6 @@ public class EntryPoint : MonoBehaviour
     public GameObject[] PrefabResources;
     public List<System.Func<IEnumerator>> ServiceCourrutines;
 
-
     private void StoreGameResources()
     {
         DependencySystem.StoreResources(PrefabResources);

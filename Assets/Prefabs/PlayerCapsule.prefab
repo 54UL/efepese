@@ -141,13 +141,14 @@ GameObject:
   - component: {fileID: 8616685848737228382}
   - component: {fileID: 8616685848737228371}
   - component: {fileID: 8616685848737228376}
+  - component: {fileID: 1284866859794550621}
   m_Layer: 8
   m_Name: PlayerCapsule
   m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &8997996947095583982
 Transform:
   m_ObjectHideFlags: 0

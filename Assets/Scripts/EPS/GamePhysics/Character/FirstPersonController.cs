@@ -1,6 +1,6 @@
 ﻿using System;
 using EPS.GamePhysics.Core;
-using StarterAssets;
+
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -45,19 +45,20 @@ namespace EPS.GamePhysics.Character
 		[FormerlySerializedAs("GroundLayers")] [Tooltip("What layers the character uses as ground")]
 		public LayerMask groundLayers;
 
-		[FormerlySerializedAs("CinemachineCameraTarget")]
-		[Header("Cinemachine")]
-		[Tooltip("The follow target set in the Cinemachine Virtual Camera that the camera will follow")]
-		public GameObject cinemachineCameraTarget;
-		[FormerlySerializedAs("TopClamp")] [Tooltip("How far in degrees can you move the camera up")]
+		[FormerlySerializedAs("PlayerCamera")]
+		[Header("Player camera")]
+		public GameObject PlayerCamera;
+		[FormerlySerializedAs("TopClamp")]
+		[Tooltip("How far in degrees can you move the camera up")]
 		public float topClamp = 90.0f;
-		[FormerlySerializedAs("BottomClamp")] [Tooltip("How far in degrees can you move the camera down")]
+		[FormerlySerializedAs("BottomClamp")]
+		[Tooltip("How far in degrees can you move the camera down")]
 		public float bottomClamp = -90.0f;
 
-		// cinemachine
-		private float _cinemachineTargetPitch;
 
 		// player
+		private float _playerCameraTargetPitch;
+
 		private float _speed;
 		private float _rotationVelocity;
 		private float _verticalVelocity;
@@ -69,13 +70,11 @@ namespace EPS.GamePhysics.Character
 		
 		private CharacterController _controller;
 		private GameObject _mainCamera;
-		private Animator _animator;
+		public Animator _animator;
 		private static readonly int VelocityZ = Animator.StringToHash("VelocityZ");
 		private static readonly int VelocityX = Animator.StringToHash("VelocityX");
 
 		private const float Threshold = 0.01f;
-
-		
 
 		private void Awake()
 		{
@@ -89,7 +88,7 @@ namespace EPS.GamePhysics.Character
 		protected override void Start()
 		{
 			base.Start();
-			_animator = gameObject.GetComponentInChildren<Animator>();
+			
 			_controller = GetComponent<CharacterController>();
 
 
@@ -124,15 +123,15 @@ namespace EPS.GamePhysics.Character
 			if (!(_inputActions.look.sqrMagnitude >= Threshold)) return;
 			//Don't multiply mouse input by Time.deltaTime
 			float deltaTimeMultiplier = IsCurrentDeviceMouse ? 1.0f : Time.deltaTime;
-				
-			_cinemachineTargetPitch += _inputActions.look.y * rotationSpeed * deltaTimeMultiplier;
+
+			_playerCameraTargetPitch += _inputActions.look.y * rotationSpeed * deltaTimeMultiplier;
 			_rotationVelocity = _inputActions.look.x * rotationSpeed * deltaTimeMultiplier;
 
 			// clamp our pitch rotation
-			_cinemachineTargetPitch = ClampAngle(_cinemachineTargetPitch, bottomClamp, topClamp);
+			_playerCameraTargetPitch = ClampAngle(_playerCameraTargetPitch, bottomClamp, topClamp);
 
 			// Update Cinemachine camera target pitch
-			cinemachineCameraTarget.transform.localRotation = Quaternion.Euler(_cinemachineTargetPitch, 0.0f, 0.0f);
+			PlayerCamera.transform.localRotation = Quaternion.Euler(_playerCameraTargetPitch, 0.0f, 0.0f);
 
 			// rotate the player left and right
 			transform.Rotate(Vector3.up * _rotationVelocity);
@@ -181,12 +180,12 @@ namespace EPS.GamePhysics.Character
 			// animate the player 
 			var transformProp = transform;
 			var playerVelocity = transformProp.rotation * new Vector3(-velocity.x, 0.0f, velocity.z);
-			_animator.SetFloat(VelocityX, playerVelocity.x);
-			_animator.SetFloat(VelocityZ, playerVelocity.z);
-			
-			// note: Vector2's != operator uses approximation so is not floating point error prone, and is cheaper than magnitude
-			// if there is a move input rotate player when the player is moving
-			if (_inputActions.move != Vector2.zero)
+            _animator.SetFloat(VelocityX, playerVelocity.x);
+            _animator.SetFloat(VelocityZ, playerVelocity.z);
+
+            // note: Vector2's != operator uses approximation so is not floating point error prone, and is cheaper than magnitude
+            // if there is a move input rotate player when the player is moving
+            if (_inputActions.move != Vector2.zero)
 			{
 				// move
 				inputDirection = transformProp.right * _inputActions.move.x + transformProp.forward * _inputActions.move.y;

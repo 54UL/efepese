@@ -11,8 +11,10 @@ namespace EPS
         public float kickBackDistance = -1; // backwards
         public float recoilSpringForce = 1;
         public float kickInForce = 1;
-        public float pitchKickBackAngleRange = 10;
-        public float yawKickBackAngleRange = 15;
+        public float pitchKickBackAngleRange = 5;
+        public float yawKickBackAngleRange = 5;
+        public float rollKickBackAngleRange = 2;
+
         public float recoilDeadZone = 0.1f;
         //OPTIONAL
         public Transform bolt;

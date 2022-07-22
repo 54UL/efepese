@@ -14,7 +14,7 @@ namespace EPS
         public float pitchKickBackAngleRange = 5;
         public float yawKickBackAngleRange = 5;
         public float rollKickBackAngleRange = 2;
-
+        public Vector3 positionKickBackRange = new Vector3();
         public float recoilDeadZone = 0.1f;
         //OPTIONAL
         public Transform bolt;

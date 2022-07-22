@@ -35,6 +35,8 @@ public class WeaponSystem : MonoBehaviour
     
     [Header("Gun sway")]
     public float swaySpeed = 10;
+    public float inverseRotationInfluence = 2;
+    public float movementInfluence = 2;
 
     [Header("Gun Aim")]
     public float aimSpeed = 10;
@@ -91,24 +93,23 @@ public class WeaponSystem : MonoBehaviour
             }
         }
     }
-    public bool runningAnimation = false;
 
+    public bool runningAnimation = false;
     void OnShoot(bool IsAiming)
     {
-        //If already shooting restart
-    
-
         //procedural Recoil system
         float computedYaw = Random.Range(-currentRecoil.yawKickBackAngleRange, currentRecoil.yawKickBackAngleRange);
         float computedPitch = Random.Range(-currentRecoil.pitchKickBackAngleRange, currentRecoil.pitchKickBackAngleRange);
         float computedRoll = Random.Range(-currentRecoil.rollKickBackAngleRange, currentRecoil.rollKickBackAngleRange);
+        
+        Vector3 computedPos = new Vector3(
+            Random.Range(-currentRecoil.positionKickBackRange.x, currentRecoil.positionKickBackRange.x), 
+            Random.Range(-currentRecoil.positionKickBackRange.y, currentRecoil.positionKickBackRange.y), 
+            Random.Range(-currentRecoil.positionKickBackRange.z, currentRecoil.positionKickBackRange.z)); // refactor this shit out
 
-        Vector3 aimPos = IsAiming ? aimPoint.localPosition : Vector3.zero;
-        Vector3 kickBackPos = new Vector3(0, 0, currentRecoil.kickBackDistance) + startGunPivotPosition + aimPos;
+        Vector3 aimPos = IsAiming ? aimPoint.localPosition : startGunPivotPosition;
+        Vector3 kickBackPos =  aimPos + computedPos;
         Quaternion kickBackRot = Quaternion.Euler(computedPitch, computedYaw, computedRoll) * startGunPivotRotation;
-
-        //gunPivot.transform.localPosition = kickBackPos;
-        //gunPivot.transform.localRotation = kickBackRot;
 
         if (!runningAnimation)
         {
@@ -119,8 +120,6 @@ public class WeaponSystem : MonoBehaviour
 
     private IEnumerator KickBackAnimation(Vector3 kickBackPos,Quaternion kickBackRotation, float force)
     {
-        kickElapsedTime = 0;
-        
         while (kickElapsedTime < 1.0)
         {
             gunPivot.transform.localPosition = Vector3.Lerp(gunPivot.localPosition, kickBackPos, kickElapsedTime);
@@ -128,41 +127,56 @@ public class WeaponSystem : MonoBehaviour
             kickElapsedTime += Time.deltaTime * force;
             yield return null;
         }
+        kickElapsedTime = 0;
         runningAnimation = false;
     }
 
     void GunSway(Vector2 lookInput)
     {
         Vector3 swayRotation = startMoodelRotation.eulerAngles;
-        Quaternion newPivotRotation = Quaternion.Euler(swayRotation.x + lookInput.y, swayRotation.y + lookInput.x, 0); ;
-        gunModel.localRotation = Quaternion.Slerp(gunModel.localRotation,newPivotRotation, Time.smoothDeltaTime * swaySpeed);
+        Quaternion newPivotRotation = Quaternion.Euler(
+            swayRotation.x + (lookInput.y * movementInfluence),
+            swayRotation.y + (lookInput.x * movementInfluence), 
+            lookInput.x * inverseRotationInfluence); 
+        gunModel.localRotation = Quaternion.Slerp(gunModel.localRotation,newPivotRotation, Time.deltaTime * swaySpeed);
     }
 
-   
     public float aimElapsedTime = 0;
+    public bool antiBounce = false;
+
     private void AimAnimation(bool aimIn)
     {
+        if (!antiBounce) 
+        {
+            antiBounce = true;
+            aimElapsedTime = 0;
+        }
+
         Vector3 target;
+        float targetSpeed = 0;
 
         if (aimElapsedTime < 1.0)
         {
             if (aimIn)
+            {
                 target = aimPoint.localPosition;
+            }
             else
+            {
                 target = startGunPivotPosition;
+            }
 
             gunPivot.transform.localPosition = Vector3.Lerp(gunPivot.localPosition, target, aimElapsedTime);
             gunPivot.transform.localRotation = Quaternion.Slerp(gunPivot.localRotation, startGunPivotRotation, aimElapsedTime);
 
-            aimElapsedTime += Time.smoothDeltaTime * aimSpeed;
+            aimElapsedTime += Time.deltaTime * aimSpeed;
         }
         else
+        {
             aimElapsedTime = 0;
-    }
-
-    void WeaponAnimation()
-    {
-        
+            antiBounce = false;
+        }
+            
     }
 
     private IEnumerator ShotEffect()
@@ -196,9 +210,7 @@ public class WeaponSystem : MonoBehaviour
         startMoodelRotation = gunModel.localRotation; 
     }
 
-    public bool isAiming = false;
-
-    private void FixedUpdate()
+    private void TickSystem()
     {
         var aim = Mouse.current.rightButton.isPressed;
         var aimRelased = Mouse.current.rightButton.wasReleasedThisFrame;
@@ -207,10 +219,15 @@ public class WeaponSystem : MonoBehaviour
         {
             AimAnimation(aim);
         }
-        //else 
-           // AimAnimation(aim);
+        else if (!runningAnimation)
+            AimAnimation(aim);
 
-        //GunSway(_input.look);       
+        GunSway(_input.look);
         WeaponLogic(aim);
+    }
+
+    private void Update()
+    {
+        TickSystem();
     }
 }

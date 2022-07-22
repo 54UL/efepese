@@ -571,21 +571,6 @@ PrefabInstance:
       propertyPath: GlobalObjectIdHash
       value: 3357156575
       objectReference: {fileID: 0}
-    - target: {fileID: 5390287492254563648, guid: 4e4a209b676834a479af5a37d09ada20,
-        type: 3}
-      propertyPath: aimSpeed
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5390287492254563648, guid: 4e4a209b676834a479af5a37d09ada20,
-        type: 3}
-      propertyPath: movementInfluence
-      value: 8
-      objectReference: {fileID: 0}
-    - target: {fileID: 5390287492254563648, guid: 4e4a209b676834a479af5a37d09ada20,
-        type: 3}
-      propertyPath: inverseRotationInfluence
-      value: -4
-      objectReference: {fileID: 0}
     - target: {fileID: 8187912113784405590, guid: 4e4a209b676834a479af5a37d09ada20,
         type: 3}
       propertyPath: m_RootOrder

@@ -7,85 +7,97 @@ namespace EPS
     public class NetworkPlayer : NetworkBehaviour
     {
         //Game systems
-        public IPlayerControl currentControl;
         public WeaponSystem currentWeapon;
         public FirstPersonController fpp;
-        public GameObject root;
-        public GameObject camera;
-        public GameObject gunPivot;
+        public Camera playerCamera;
+        public CharacterController cc;
 
-        //Game components
-        public Transform spawnPoint;
-        public float currentHealth = 100;   
+        public LayerMask InvisibleMask; 
+        public LayerMask VisibleMask;
 
-        //Network vars
-        public NetworkVariable<Vector3> Position = new NetworkVariable<Vector3>();
-        public NetworkVariable<bool> IsAlive = new NetworkVariable<bool>();
-        public Camera cameraControl;
-  
+        public GameObject characterModel;
+
         public override void OnNetworkSpawn()
         {
-            //MoveToSpawn(); // Move to spawn point
-            PreparePlayer();
+            fpp = GetComponent<FirstPersonController>();
+            currentWeapon = GetComponent<WeaponSystem>();
+            playerCamera = GetComponentInChildren<Camera>();
+            cc = GetComponent<CharacterController>();
+            characterModel = gameObject.transform.Find("character").gameObject;
+            fpp.IsClient = IsClient;
+
+            fpp.currentNetworkPlayer = this;
+            SetMasks(IsLocalPlayer);
+            EnableComponents(IsLocalPlayer);
         }
 
-
-       [ServerRpc]
-       private void EnableComponentsServerRpc(bool enabled)
+        private void SetMasks(bool IsLocalPlayer)
         {
-            EnableLocalPlayerComponentsClientRpc(enabled);
+            if (!IsLocalPlayer)
+            {
+                characterModel.layer = InvisibleMask;
+                currentWeapon.gunModel.gameObject.layer = VisibleMask;
+            }
+            else
+            {
+                characterModel.layer = VisibleMask;
+                currentWeapon.gunPivot.gameObject.layer = InvisibleMask;
+            }
         }
 
+        private void EnableComponents(bool enabled)
+        {
+            fpp.enabled = enabled;
+            playerCamera.enabled = enabled;
+            currentWeapon.enabled = enabled;
+        }
+
+        public  void SendInputs(Vector3 movement, Vector3 rotation, Quaternion aimOrentation)
+        {
+            //DE MOMENTO SE APAGO POR QUE QUUEDA MEJOR EL CLIENTE AUTORITARIO DE SU PLAYER SMH NETCODE
+            //if (IsClient)
+            //{
+            //    CalculatePlayerMovementServerRpc(movement, rotation, aimOrentation);
+            //}
+            //else
+            //{
+                this.playerCamera.transform.localRotation = aimOrentation; // only pitch
+                this.transform.Rotate(rotation); // only yaw
+                cc.Move(movement);//player physics 
+            //}
+        }
+
+
+        [ServerRpc]
+        void CalculatePlayerMovementServerRpc(Vector3 movement, Vector3 rotation, Quaternion aimOrentation)
+        {
+            this.playerCamera.transform.localRotation = aimOrentation; // only pitch
+            this.transform.Rotate(rotation); // only yaw
+            cc.Move(movement);//player physics 
+        }
+
+     
         [ClientRpc]
         //Refactor move this to network manager
         private void EnableLocalPlayerComponentsClientRpc(bool enable)
         {
             fpp.enabled = enable;
-            cameraControl.enabled = enable;
+            playerCamera.enabled = enable;
             currentWeapon.enabled = enable;
-            
-            //transform.position = Position.Value;
-
-            //if (currentWeapon != null && enable)          
-            //    currentWeapon.OnBulletHit += ShootSomeOne; // args: hit, damage 
         }
 
-        public void PreparePlayer()
-        {
-            if (IsOwner)
-            {
-                fpp.enabled = true;
-                camera.SetActive(true);
-                currentWeapon.enabled = true;
-                //root.layer &= LayerMask.GetMask("default");
+        //public void DecreaseHealth(NetworkPlayer player, float value)
+        //{
+        //    player.currentHealth -= value;
+        //    player.UpdatePlayerHealthClientRpc(player.currentHealth);
 
-            }
-            else
-            {
-                fpp.enabled = false;
-                camera.SetActive(false);
-                currentWeapon.enabled = false;
-            }
-        }
-
-        public void MoveToSpawn()
-        {
-            transform.position = spawnPoint.transform.position;
-            Position.Value =  transform.position;
-        }
-
-        public void DecreaseHealth(NetworkPlayer player, float value)
-        {
-            player.currentHealth -= value;
-            player.UpdatePlayerHealthClientRpc(player.currentHealth);
-
-            if (player.currentHealth <= 0)
-            {
-                //Disable fpp control
-                //Show respawn screen (todo)
-                Debug.Log("Player dead:" + player.OwnerClientId.ToString());
-            }
-        }
+        //    if (player.currentHealth <= 0)
+        //    {
+        //        //Disable fpp control
+        //        //Show respawn screen (todo)
+        //        Debug.Log("Player dead:" + player.OwnerClientId.ToString());
+        //    }
+        //}
 
         public void ShootSomeOne(GameObject target, float damageToDeal){
             var networkPlayer = target.GetComponent<NetworkPlayer>();
@@ -96,7 +108,7 @@ namespace EPS
                 ShootServerRpc(networkPlayer, damageToDeal);
             }
             else{
-                DecreaseHealth(networkPlayer, damageToDeal);
+                //DecreaseHealth(networkPlayer, damageToDeal);
             }
         }
 
@@ -105,7 +117,7 @@ namespace EPS
         {
             if (target.TryGet(out NetworkPlayer targetObject))
             {
-                DecreaseHealth(targetObject, damageToDeal);
+                //DecreaseHesalth(targetObject, damageToDeal);
             }
             else
             {
@@ -117,7 +129,7 @@ namespace EPS
         void UpdatePlayerHealthClientRpc(float healthValue)
         {
             Debug.Log("Updated damage: " + healthValue);
-            currentHealth = healthValue;
+            //currentHealth = healthValue;
         }
     }
 }

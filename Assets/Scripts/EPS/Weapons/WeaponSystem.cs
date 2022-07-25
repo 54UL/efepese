@@ -210,7 +210,7 @@ public class WeaponSystem : MonoBehaviour
         startMoodelRotation = gunModel.localRotation; 
     }
 
-    private void TickSystem()
+    private IEnumerator TickSystem()
     {
         var aim = Mouse.current.rightButton.isPressed;
         var aimRelased = Mouse.current.rightButton.wasReleasedThisFrame;
@@ -224,10 +224,12 @@ public class WeaponSystem : MonoBehaviour
 
         GunSway(_input.look);
         WeaponLogic(aim);
+        yield return new WaitForSeconds(0.016f);
     }
 
     private void Update()
     {
-        TickSystem();
+        StartCoroutine(TickSystem());
+     
     }
 }

@@ -9,6 +9,13 @@ namespace EPS.GamePhysics.Character
 	[RequireComponent(typeof(CharacterController))]
 	public class FirstPersonController : InputControllerBase
 	{
+		[Header("EPS data")]
+		public bool IsClient;
+		public NetworkPlayer currentNetworkPlayer;
+		public Vector3 characterMovement;
+		public Vector3 characterRotation;
+		public Quaternion aimOrentation;
+
 		[Header("Player")] [Tooltip("Crouch speed of the character in m/s")]
 		public float crouchSpeed = 1.5f;
 		[FormerlySerializedAs("MoveSpeed")] [Tooltip("Move speed of the character in m/s")]
@@ -45,9 +52,7 @@ namespace EPS.GamePhysics.Character
 		[FormerlySerializedAs("GroundLayers")] [Tooltip("What layers the character uses as ground")]
 		public LayerMask groundLayers;
 
-		[FormerlySerializedAs("PlayerCamera")]
-		[Header("Player camera")]
-		public GameObject PlayerCamera;
+
 		[FormerlySerializedAs("TopClamp")]
 		[Tooltip("How far in degrees can you move the camera up")]
 		public float topClamp = 90.0f;
@@ -69,7 +74,6 @@ namespace EPS.GamePhysics.Character
 		private float _fallTimeoutDelta;
 		
 		private CharacterController _controller;
-		private GameObject _mainCamera;
 		public Animator _animator;
 		private static readonly int VelocityZ = Animator.StringToHash("VelocityZ");
 		private static readonly int VelocityX = Animator.StringToHash("VelocityX");
@@ -78,19 +82,14 @@ namespace EPS.GamePhysics.Character
 
 		private void Awake()
 		{
-			// get a reference to our main camera
-			if (_mainCamera == null)
-			{
-				_mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
-			}
+			
 		}
 
 		protected override void Start()
 		{
 			base.Start();
-			
 			_controller = GetComponent<CharacterController>();
-
+			
 
 			// reset our timeouts on start
 			_jumpTimeoutDelta = jumpTimeout;
@@ -102,6 +101,8 @@ namespace EPS.GamePhysics.Character
 			JumpAndGravity();
 			GroundedCheck();
 			Move();
+			
+			currentNetworkPlayer.SendInputs(characterMovement, characterRotation, aimOrentation);
 		}
 
 		private void LateUpdate()
@@ -120,7 +121,10 @@ namespace EPS.GamePhysics.Character
 		private void CameraRotation()
 		{
 			// if there is an input
-			if (!(_inputActions.look.sqrMagnitude >= Threshold)) return;
+			if (!(_inputActions.look.sqrMagnitude >= Threshold)) {
+				characterRotation = Vector2.zero;
+				return;
+			}
 			//Don't multiply mouse input by Time.deltaTime
 			float deltaTimeMultiplier = IsCurrentDeviceMouse ? 1.0f : Time.deltaTime;
 
@@ -131,10 +135,15 @@ namespace EPS.GamePhysics.Character
 			_playerCameraTargetPitch = ClampAngle(_playerCameraTargetPitch, bottomClamp, topClamp);
 
 			// Update Cinemachine camera target pitch
-			PlayerCamera.transform.localRotation = Quaternion.Euler(_playerCameraTargetPitch, 0.0f, 0.0f);
+			aimOrentation = Quaternion.Euler(_playerCameraTargetPitch, 0.0f, 0.0f); 
 
-			// rotate the player left and right
-			transform.Rotate(Vector3.up * _rotationVelocity);
+		 //TODO: MOVER AL NETWORK PLAYER
+		 //PlayerCamera.transform.localRotation = Quaternion.Euler(_playerCameraTargetPitch, 0.0f, 0.0f);
+
+			characterRotation = Vector3.up * _rotationVelocity;
+
+			//TODO: MOVER AL NETWORK PLAYER
+			//transform.Rotate(Vector3.up * _rotationVelocity); 
 		}
 
 		private void Move()
@@ -192,7 +201,7 @@ namespace EPS.GamePhysics.Character
 			}
 
 			// move the player
-			_controller.Move(inputDirection.normalized * (_speed * Time.deltaTime) + new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
+			characterMovement = (inputDirection.normalized * (_speed * Time.deltaTime) + new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
 		}
 
 		private void JumpAndGravity()

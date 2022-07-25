@@ -7,7 +7,7 @@ namespace EPS
 {
     public interface INetworking
     {
-       void Start(NetworkSytemType type, string ip, int port);
+       bool Start(NetworkSytemType type, string ip, int port);
        void Stop();
     }
 }

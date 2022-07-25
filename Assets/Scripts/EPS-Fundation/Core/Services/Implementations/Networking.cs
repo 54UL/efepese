@@ -48,44 +48,33 @@ namespace EPS
             response.Pending = false;
         }
 
-        public void Start(NetworkSytemType type, string ip, int port)
+        public bool Start(NetworkSytemType type, string ip, int port)
         {
             var networkManager = NetworkManager.Singleton;
+            currentSystemType = type;
             // networkManager.ConnectionApprovalCallback = ApprovalCheck;
-            
-            //Init
+
+       
             switch (type)
             {
                 case NetworkSytemType.HOST:
-                     networkManager.StartHost();
-                    break;
+                     return networkManager.StartHost();
                 case NetworkSytemType.SERVER:
-                     networkManager.StartServer();
-                    break;
+                     return networkManager.StartServer();
                 case NetworkSytemType.CLIENT:
                     networkManager.NetworkConfig.ConnectionData = System.Text.Encoding.ASCII.GetBytes("EPS CUSTOM DATA(INSERT JSON STRING HERE)...");// EXAMPLE...
                     networkManager.GetComponent<UNetTransport>().ConnectAddress = ip; //takes string
                     networkManager.GetComponent<UNetTransport>().ConnectPort = port;  //takes integer
-                    networkManager.StartClient();
-                break;    
+                    return networkManager.StartClient();
+                default:
+                    return false;
             }
-            currentSystemType = type;
         }
 
         public void Stop()
         {
             var networkManager = NetworkManager.Singleton;
-
-            //switch (currentSystemType)
-            //{
-            //    case NetworkSytemType.HOST:
-            //        //return networkManager.
-            //    case NetworkSytemType.SERVER:
-            //        return networkManager.();
-            //    case NetworkSytemType.CLIENT:
-            //        return networkManager.();
-            //    break;    
-            //}
+            networkManager.Shutdown(false);
         }
 
         //IService

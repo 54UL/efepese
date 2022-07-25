@@ -139,13 +139,13 @@ public class WeaponSystem : MonoBehaviour
 
     private void AimAnimation(bool aimIn)
     {
+        Vector3 target;
+
         if (!antiBounce) 
         {
             antiBounce = true;
             aimElapsedTime = 0;
         }
-
-        Vector3 target;
 
         if (aimElapsedTime < 1.0)
         {
@@ -173,9 +173,11 @@ public class WeaponSystem : MonoBehaviour
 
     private IEnumerator ShotEffect()
     {
+        _input.look.y += currentRecoil.upsideRecoil;
         muzzleFlash.SetActive(true);
         yield return shotDuration;
         muzzleFlash.SetActive(false);
+        _input.look.y = 0;
     }
     
     public void OnDrawGizmos()

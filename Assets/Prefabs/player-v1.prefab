@@ -6732,13 +6732,12 @@ MonoBehaviour:
   fpp: {fileID: 0}
   playerCamera: {fileID: 0}
   cc: {fileID: 0}
-  InvisibleMask:
-    serializedVersion: 2
-    m_Bits: 4096
-  VisibleMask:
-    serializedVersion: 2
-    m_Bits: 1
+  animator: {fileID: 0}
   characterModel: {fileID: 4908271324375206271}
+  CurrentHealth: 100
+  SpawnPoint: {fileID: 5597570958345857155, guid: b9d246ee3aef4e541ac57252a664ec2e,
+    type: 3}
+  Hud: {fileID: 0}
 --- !u!143 &8857065353848349926
 CharacterController:
   m_ObjectHideFlags: 0
@@ -6776,6 +6775,8 @@ MonoBehaviour:
   gunPivot: {fileID: 8524665746598192888}
   gunModel: {fileID: 199830805232213891}
   _input: {fileID: 0}
+  runningAnimation: 0
+  antiBounce: 0
   currentRecoil:
     kickBackCurve:
       serializedVersion: 2
@@ -6801,6 +6802,7 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
+    upsideRecoil: -0.5
     kickBackDistance: -0.02
     recoilSpringForce: 15
     kickInForce: 1
@@ -6819,13 +6821,11 @@ MonoBehaviour:
   inverseRotationInfluence: -4
   movementInfluence: 8
   aimSpeed: 1
-  gunDamage: 30
+  aimElapsedTime: 0
+  gunDamage: 10
   fireRate: 0.1
   weaponRange: 200
   hitForce: 100
-  runningAnimation: 0
-  aimElapsedTime: 0
-  antiBounce: 0
 --- !u!114 &8857065353848349933
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6843,6 +6843,7 @@ MonoBehaviour:
   characterMovement: {x: 0, y: 0, z: 0}
   characterRotation: {x: 0, y: 0, z: 0}
   aimOrentation: {x: 0, y: 0, z: 0, w: 0}
+  playerInputDirection: {x: 0, y: 0, z: 0}
   crouchSpeed: 1.5
   moveSpeed: 2.5
   sprintSpeed: 6
@@ -6860,7 +6861,6 @@ MonoBehaviour:
     m_Bits: 512
   topClamp: 90
   bottomClamp: -90
-  _animator: {fileID: 9099595116102002769}
 --- !u!114 &4638131743311220667
 MonoBehaviour:
   m_ObjectHideFlags: 0

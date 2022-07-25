@@ -37,6 +37,8 @@ public class NetworkMatch : MonoBehaviour
     public InputField ClientPortInputField;
     public InputField MatchName;
     public GameObject consoleLogPrefab;
+    public Text Health;
+
     private InputSystem.PlayerActions _input;
 
 
@@ -44,6 +46,11 @@ public class NetworkMatch : MonoBehaviour
   
     //DEPENDENCIES
     public EPS.INetworking gameNetworking;
+
+    public void SetUIHealth(double value)
+    {
+        Health.text = "Health:" + value + "%";
+    }
 
     void LogInfo(string message)
     {
@@ -56,6 +63,7 @@ public class NetworkMatch : MonoBehaviour
         ServerShellRoot.gameObject.SetActive(visible);
         _input.cursorInputForLook = !visible;
         _input.cursorLocked = !visible;
+        Health.enabled = !visible;
     }
 
     

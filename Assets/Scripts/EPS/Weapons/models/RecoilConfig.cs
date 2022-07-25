@@ -8,6 +8,7 @@ namespace EPS
     public class RecoilConfig
     {
         public AnimationCurve kickBackCurve;
+        public float upsideRecoil = 0.8f;
         public float kickBackDistance = -1; // backwards
         public float recoilSpringForce = 1;
         public float kickInForce = 1;

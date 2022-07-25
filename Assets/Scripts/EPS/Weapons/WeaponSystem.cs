@@ -23,6 +23,8 @@ public class WeaponSystem : MonoBehaviour
     public Transform  gunPivot;
     public Transform gunModel;
     public InputSystem.PlayerActions _input;
+    public bool runningAnimation = false;
+    public bool antiBounce = false;
 
     //RECOIL PROTOTYPE
     [Header("Recoil system")]
@@ -40,6 +42,7 @@ public class WeaponSystem : MonoBehaviour
 
     [Header("Gun Aim")]
     public float aimSpeed = 10;
+    public float aimElapsedTime = 0;
 
     [Header("Weapon descriptor")]
     //Weapon descriptor
@@ -52,8 +55,8 @@ public class WeaponSystem : MonoBehaviour
     private float nextFire;                   
     private Vector3 hitPos;
     private WaitForSeconds shotDuration = new WaitForSeconds(0.07f);    
-    private AudioSource gunAudio;   
-   
+    private AudioSource gunAudio;
+
     //EVENTS
     public delegate void BulletHit(GameObject target, float damage);
     public event BulletHit OnBulletHit;
@@ -65,25 +68,18 @@ public class WeaponSystem : MonoBehaviour
         {
             // Update the time when our player can fire next
             nextFire = Time.time + fireRate;
-            // Start our ShotEffect coroutine to turn our laser line on and off
-            // StartCoroutine(ShotEffect());
-            RaycastHit hit;
 
+            StartCoroutine(ShotEffect());
             // Check if our raycast has hit anything
-            if (Physics.Raycast(gunEnd.transform.position, gunEnd.transform.forward, out hit, weaponRange))
+            if (Physics.Raycast(gunEnd.transform.position, gunEnd.transform.forward, out RaycastHit hit, weaponRange))
             {
-                OnShoot(isAiming); //XUL TODO: TEST THIS FIRST...
-                //StartCoroutine(ShotEffect());
-                // Set the end position for our laser line 
-                //impactPoint.SetActive(true);
                 hitPos = hit.point;
-                //impactPoint.transform.position = hit.point;
+                OnShoot(isAiming); //XUL TODO: TEST THIS FIRST...
+
                 if (OnBulletHit != null)
                     OnBulletHit(hit.transform.gameObject, gunDamage);
-                
-                // Check if the object we hit has a rigidbody attached
+
                 if (hit.rigidbody != null)
-                    // Add force to the rigidbody we hit, in the direction from which it was hit
                     hit.rigidbody.AddForce(-hit.normal * hitForce);
             }
             else
@@ -94,7 +90,7 @@ public class WeaponSystem : MonoBehaviour
         }
     }
 
-    public bool runningAnimation = false;
+  
     void OnShoot(bool IsAiming)
     {
         //procedural Recoil system
@@ -141,9 +137,6 @@ public class WeaponSystem : MonoBehaviour
         gunModel.localRotation = Quaternion.Slerp(gunModel.localRotation,newPivotRotation, Time.deltaTime * swaySpeed);
     }
 
-    public float aimElapsedTime = 0;
-    public bool antiBounce = false;
-
     private void AimAnimation(bool aimIn)
     {
         if (!antiBounce) 
@@ -153,7 +146,6 @@ public class WeaponSystem : MonoBehaviour
         }
 
         Vector3 target;
-        float targetSpeed = 0;
 
         if (aimElapsedTime < 1.0)
         {
@@ -181,17 +173,9 @@ public class WeaponSystem : MonoBehaviour
 
     private IEnumerator ShotEffect()
     {
-        // Play the shooting sound effect
-        //gunAudio.Play();
-
-        // Turn on our line renderer
         muzzleFlash.SetActive(true);
-        //impactPoint.SetActive(true);
-        //Wait for .07 seconds
         yield return shotDuration;
-        // Deactivate our line renderer after waiting
         muzzleFlash.SetActive(false);
-        //impactPoint.SetActive(false);
     }
     
     public void OnDrawGizmos()
@@ -213,7 +197,6 @@ public class WeaponSystem : MonoBehaviour
     private IEnumerator TickSystem()
     {
         var aim = Mouse.current.rightButton.isPressed;
-        var aimRelased = Mouse.current.rightButton.wasReleasedThisFrame;
 
         if (aim)
         {
@@ -230,6 +213,5 @@ public class WeaponSystem : MonoBehaviour
     private void Update()
     {
         StartCoroutine(TickSystem());
-     
     }
 }

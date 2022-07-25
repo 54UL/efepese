@@ -15,6 +15,7 @@ namespace EPS.GamePhysics.Character
 		public Vector3 characterMovement;
 		public Vector3 characterRotation;
 		public Quaternion aimOrentation;
+		public Vector3 playerInputDirection;
 
 		[Header("Player")] [Tooltip("Crouch speed of the character in m/s")]
 		public float crouchSpeed = 1.5f;
@@ -60,10 +61,8 @@ namespace EPS.GamePhysics.Character
 		[Tooltip("How far in degrees can you move the camera down")]
 		public float bottomClamp = -90.0f;
 
-
 		// player
 		private float _playerCameraTargetPitch;
-
 		private float _speed;
 		private float _rotationVelocity;
 		private float _verticalVelocity;
@@ -72,14 +71,9 @@ namespace EPS.GamePhysics.Character
 		// timeout delta time
 		private float _jumpTimeoutDelta;
 		private float _fallTimeoutDelta;
-		
 		private CharacterController _controller;
-		public Animator _animator;
-		private static readonly int VelocityZ = Animator.StringToHash("VelocityZ");
-		private static readonly int VelocityX = Animator.StringToHash("VelocityX");
-
 		private const float Threshold = 0.01f;
-
+		
 		private void Awake()
 		{
 			
@@ -102,7 +96,7 @@ namespace EPS.GamePhysics.Character
 			GroundedCheck();
 			Move();
 			
-			currentNetworkPlayer.SendInputs(characterMovement, characterRotation, aimOrentation);
+			currentNetworkPlayer.SendInputs(characterMovement, characterRotation, aimOrentation, playerInputDirection);
 		}
 
 		private void LateUpdate()
@@ -189,8 +183,8 @@ namespace EPS.GamePhysics.Character
 			// animate the player 
 			var transformProp = transform;
 			var playerVelocity = transformProp.rotation * new Vector3(-velocity.x, 0.0f, velocity.z);
-            _animator.SetFloat(VelocityX, playerVelocity.x);
-            _animator.SetFloat(VelocityZ, playerVelocity.z);
+            
+			playerInputDirection = playerVelocity;
 
             // note: Vector2's != operator uses approximation so is not floating point error prone, and is cheaper than magnitude
             // if there is a move input rotate player when the player is moving

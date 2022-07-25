@@ -11,11 +11,16 @@ namespace EPS
         public FirstPersonController fpp;
         public Camera playerCamera;
         public CharacterController cc;
-
+        public Animator animator;
         public LayerMask InvisibleMask; 
         public LayerMask VisibleMask;
 
         public GameObject characterModel;
+
+
+        private static readonly int VelocityZ = Animator.StringToHash("VelocityZ");
+        private static readonly int VelocityX = Animator.StringToHash("VelocityX");
+
 
         public override void OnNetworkSpawn()
         {
@@ -23,7 +28,9 @@ namespace EPS
             currentWeapon = GetComponent<WeaponSystem>();
             playerCamera = GetComponentInChildren<Camera>();
             cc = GetComponent<CharacterController>();
-            characterModel = gameObject.transform.Find("character").gameObject;
+            characterModel = this.transform.Find("character").gameObject;
+            animator = characterModel.GetComponent<Animator>();
+
             fpp.IsClient = IsClient;
 
             fpp.currentNetworkPlayer = this;
@@ -31,17 +38,26 @@ namespace EPS
             EnableComponents(IsLocalPlayer);
         }
 
+        void UpdateObjectLayers(Transform parent, int layer)
+        {
+            foreach (var childTransform in parent.GetComponentsInChildren<Transform>(true))
+                childTransform.gameObject.layer = layer;
+        }
+
         private void SetMasks(bool IsLocalPlayer)
         {
-            if (!IsLocalPlayer)
+            int invisibleMask = LayerMask.NameToLayer("Invisible");
+            int visibleMask = LayerMask.NameToLayer("Default");
+
+            if (IsLocalPlayer)
             {
-                characterModel.layer = InvisibleMask;
-                currentWeapon.gunModel.gameObject.layer = VisibleMask;
+                UpdateObjectLayers(characterModel.transform, invisibleMask);
+                UpdateObjectLayers(currentWeapon.gunPivot, visibleMask);
             }
             else
             {
-                characterModel.layer = VisibleMask;
-                currentWeapon.gunPivot.gameObject.layer = InvisibleMask;
+                UpdateObjectLayers(characterModel.transform, visibleMask);
+                UpdateObjectLayers(currentWeapon.gunPivot, invisibleMask);
             }
         }
 
@@ -52,31 +68,24 @@ namespace EPS
             currentWeapon.enabled = enabled;
         }
 
-        public  void SendInputs(Vector3 movement, Vector3 rotation, Quaternion aimOrentation)
-        {
-            //DE MOMENTO SE APAGO POR QUE QUUEDA MEJOR EL CLIENTE AUTORITARIO DE SU PLAYER SMH NETCODE
-            //if (IsClient)
-            //{
-            //    CalculatePlayerMovementServerRpc(movement, rotation, aimOrentation);
-            //}
-            //else
-            //{
-                this.playerCamera.transform.localRotation = aimOrentation; // only pitch
-                this.transform.Rotate(rotation); // only yaw
-                cc.Move(movement);//player physics 
-            //}
-        }
-
-
-        [ServerRpc]
-        void CalculatePlayerMovementServerRpc(Vector3 movement, Vector3 rotation, Quaternion aimOrentation)
+        public  void SendInputs(Vector3 movement, Vector3 rotation, Quaternion aimOrentation, Vector3 inputDirection)
         {
             this.playerCamera.transform.localRotation = aimOrentation; // only pitch
             this.transform.Rotate(rotation); // only yaw
             cc.Move(movement);//player physics 
+            animator.SetFloat(VelocityX, inputDirection.x);
+            animator.SetFloat(VelocityZ, inputDirection.z); 
         }
 
-     
+        [ServerRpc]
+        void CalculatePlayerMovementServerRpc(Vector3 movement, Vector3 rotation, Quaternion aimOrentation)
+        {
+            //Physics
+            this.playerCamera.transform.localRotation = aimOrentation; // only pitch
+            this.transform.Rotate(rotation); // only yaw
+            cc.Move(movement);//player physics
+        }
+
         [ClientRpc]
         //Refactor move this to network manager
         private void EnableLocalPlayerComponentsClientRpc(bool enable)

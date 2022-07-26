@@ -60,16 +60,19 @@ namespace EPS
         {
             int invisibleMask = LayerMask.NameToLayer("Invisible");
             int visibleMask = LayerMask.NameToLayer("Default");
+            var audioListener = playerCamera.GetComponent<AudioListener>();
 
             if (IsLocalPlayer)
             {
                 UpdateObjectLayers(characterModel.transform, invisibleMask);
                 UpdateObjectLayers(currentWeapon.gunPivot, visibleMask);
+                audioListener.enabled = true;
             }
             else
             {
                 UpdateObjectLayers(characterModel.transform, visibleMask);
                 UpdateObjectLayers(currentWeapon.gunPivot, invisibleMask);
+                audioListener.enabled = false;
             }
 
             SpawnPlayer();
@@ -77,7 +80,7 @@ namespace EPS
 
         private void EnableComponents(bool enabled)
         {
-            fpp.enabled = enabled;
+            fpp.EnableLocalInput = enabled;
             playerCamera.enabled = enabled;
             currentWeapon.enabled = enabled;
         }

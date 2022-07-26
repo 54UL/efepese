@@ -10,6 +10,8 @@ namespace EPS.GamePhysics.Character
 	public class FirstPersonController : InputControllerBase
 	{
 		[Header("EPS data")]
+		public bool EnableLocalInput = true;
+
 		public bool IsClient;
 		public NetworkPlayer currentNetworkPlayer;
 		public Vector3 characterMovement;
@@ -92,10 +94,12 @@ namespace EPS.GamePhysics.Character
 
 		private void Update()
 		{
-			JumpAndGravity();
-			GroundedCheck();
-			Move();
-			
+			if (EnableLocalInput)
+            {
+				JumpAndGravity();
+				GroundedCheck();
+				Move();
+			}
 			currentNetworkPlayer.SendInputs(characterMovement, characterRotation, aimOrentation, playerInputDirection);
 		}
 

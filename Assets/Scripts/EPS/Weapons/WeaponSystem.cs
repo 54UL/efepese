@@ -49,13 +49,17 @@ public class WeaponSystem : MonoBehaviour
     public int gunDamage = 25;
     public float fireRate = 0.25f;                                     
     public float weaponRange = 50f;                                 
-    public float hitForce = 100f;                                                             
+    public float hitForce = 100f;
+
+    [Header("Gun Audio")]
+    public AudioSource gunAudio;
+    public AudioClip[] gunShoots;
+
 
     //Private members
     private float nextFire;                   
     private Vector3 hitPos;
-    private WaitForSeconds shotDuration = new WaitForSeconds(0.07f);    
-    private AudioSource gunAudio;
+    private WaitForSeconds shotDuration = new WaitForSeconds(0.09f);    
 
     //EVENTS
     public delegate void BulletHit(GameObject target, float damage);
@@ -87,6 +91,7 @@ public class WeaponSystem : MonoBehaviour
                 hitPos = Vector3.zero;
                 //impactPoint.SetActive(false);
             }
+       
         }
     }
 
@@ -170,12 +175,29 @@ public class WeaponSystem : MonoBehaviour
         }
             
     }
+    public int gunAudioIndex = 0;
+
+    private float GunShootAudio()
+    {
+        var currentClip = gunShoots[gunAudioIndex];
+        gunAudio.clip = currentClip;
+        gunAudio.Play();
+
+        if (gunAudioIndex >= gunShoots.Length-1)
+            gunAudioIndex = 0;
+        else
+            gunAudioIndex++;
+
+        return currentClip.length;
+    }
 
     private IEnumerator ShotEffect()
     {
-        _input.look.y += currentRecoil.upsideRecoil;
+        //Add camera recoil
+        float gunShootDuration = GunShootAudio();
+        if (_input.look.y <0.99f) _input.look.y += currentRecoil.upsideRecoil * Time.deltaTime;
         muzzleFlash.SetActive(true);
-        yield return shotDuration;
+        yield return new WaitForSeconds(0.09f);
         muzzleFlash.SetActive(false);
         _input.look.y = 0;
     }

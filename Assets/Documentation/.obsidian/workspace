@@ -1,0 +1,138 @@
+{
+  "main": {
+    "id": "9883f74f7e7a4389",
+    "type": "split",
+    "children": [
+      {
+        "id": "08ada6f3b28d1e25",
+        "type": "leaf",
+        "state": {
+          "type": "markdown",
+          "state": {
+            "file": "InputSystem.md",
+            "mode": "source",
+            "source": false
+          }
+        }
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "5caab1039db749d6",
+    "type": "split",
+    "children": [
+      {
+        "id": "bccff233970361ac",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "6b19d9890f1da13d",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {}
+            }
+          },
+          {
+            "id": "5006eadb37e0b4dd",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "931b059eba0bae22",
+            "type": "leaf",
+            "state": {
+              "type": "starred",
+              "state": {}
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "d79923ded28502b3",
+    "type": "split",
+    "children": [
+      {
+        "id": "aa9a3fd28cc20434",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "de8067fff43cb784",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "InputSystem.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "9a2507b6e2829953",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "InputSystem.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "1d429e3098d4d298",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true
+              }
+            }
+          },
+          {
+            "id": "5d086198229844df",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "InputSystem.md"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "active": "08ada6f3b28d1e25",
+  "lastOpenFiles": [
+    "Markdown Cheat Sheet.md",
+    "InputSystem.md",
+    "Images/PlayerActions.png",
+    "Images/PlayerActions.png.md"
+  ]
+}

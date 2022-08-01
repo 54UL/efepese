@@ -55,6 +55,10 @@ public class WeaponSystem : MonoBehaviour
     public AudioSource gunAudio;
     public AudioClip[] gunShoots;
 
+    [Header("Particle system")]
+    public GameObject bulletImpact;
+    public ParticleSystem muzzleFlashParticles;
+
 
     //Private members
     private float nextFire;                   
@@ -72,13 +76,13 @@ public class WeaponSystem : MonoBehaviour
         {
             // Update the time when our player can fire next
             nextFire = Time.time + fireRate;
-
+            OnShoot(isAiming);
             StartCoroutine(ShotEffect());
             // Check if our raycast has hit anything
             if (Physics.Raycast(gunEnd.transform.position, gunEnd.transform.forward, out RaycastHit hit, weaponRange))
             {
                 hitPos = hit.point;
-                OnShoot(isAiming); //XUL TODO: TEST THIS FIRST...
+               
 
                 if (OnBulletHit != null)
                     OnBulletHit(hit.transform.gameObject, gunDamage);
@@ -100,7 +104,7 @@ public class WeaponSystem : MonoBehaviour
     {
         //procedural Recoil system
         float computedYaw = Random.Range(-currentRecoil.yawKickBackAngleRange, currentRecoil.yawKickBackAngleRange);
-        float computedPitch = Random.Range(-currentRecoil.pitchKickBackAngleRange, currentRecoil.pitchKickBackAngleRange);
+        float computedPitch = Random.Range(-currentRecoil.pitchKickBackAngleRange, (currentRecoil.pitchKickBackAngleRange + currentRecoil.pitchKickBackAngleRange) * -1.0f);
         float computedRoll = Random.Range(-currentRecoil.rollKickBackAngleRange, currentRecoil.rollKickBackAngleRange);
         
         Vector3 computedPos = new Vector3(
@@ -126,9 +130,11 @@ public class WeaponSystem : MonoBehaviour
             gunPivot.transform.localPosition = Vector3.Lerp(gunPivot.localPosition, kickBackPos, kickElapsedTime);
             gunPivot.transform.localRotation = Quaternion.Slerp(gunPivot.localRotation, kickBackRotation, kickElapsedTime);
             kickElapsedTime += Time.deltaTime * force;
+
             yield return null;
         }
         kickElapsedTime = 0;
+     
         runningAnimation = false;
     }
 
@@ -165,16 +171,14 @@ public class WeaponSystem : MonoBehaviour
 
             gunPivot.transform.localPosition = Vector3.Lerp(gunPivot.localPosition, target, aimElapsedTime);
             gunPivot.transform.localRotation = Quaternion.Slerp(gunPivot.localRotation, startGunPivotRotation, aimElapsedTime);
-
             aimElapsedTime += Time.deltaTime * aimSpeed;
         }
         else
         {
             aimElapsedTime = 0;
-            antiBounce = false;
         }
-            
     }
+
     public int gunAudioIndex = 0;
 
     private float GunShootAudio()
@@ -194,14 +198,18 @@ public class WeaponSystem : MonoBehaviour
     private IEnumerator ShotEffect()
     {
         //Add camera recoil
-        float gunShootDuration = GunShootAudio();
-        if (_input.look.y <0.99f) _input.look.y += currentRecoil.upsideRecoil * Time.deltaTime;
+        if (_input.look.y < 0.99f) _input.look.y -= currentRecoil.upsideRecoil * Time.deltaTime; //TODO:REPAIR THIS THING
+
+        //float gunShootDuration = GunShootAudio();
         muzzleFlash.SetActive(true);
-        yield return new WaitForSeconds(0.09f);
+        //muzzleFlashParticles.Play();
+        yield return new WaitForSeconds(0.07f);
+      
+        //muzzleFlashParticles.Stop();
         muzzleFlash.SetActive(false);
         _input.look.y = 0;
     }
-    
+
     public void OnDrawGizmos()
     {
         Gizmos.color = Color.red;
@@ -221,13 +229,20 @@ public class WeaponSystem : MonoBehaviour
     private IEnumerator TickSystem()
     {
         var aim = Mouse.current.rightButton.isPressed;
+        var wasRelased = Mouse.current.rightButton.wasReleasedThisFrame;
+
+        if (wasRelased)
+            antiBounce = true;
 
         if (aim)
         {
-            AimAnimation(aim);
+            AimAnimation(true);
         }
         else if (!runningAnimation)
-            AimAnimation(aim);
+        {
+
+            AimAnimation(false);
+        }
 
         GunSway(_input.look);
         WeaponLogic(aim);

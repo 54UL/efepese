@@ -12,6 +12,8 @@ public class IKControl : MonoBehaviour
     public Transform lookObj = null;
     public Transform rightHandPivot = null;
     public Transform leftHandPivot = null;
+    public Transform rightHintPivot = null;
+    public Transform leftHintPivot = null;
     public float handsWight = 1;
 
     void Start()
@@ -34,13 +36,16 @@ public class IKControl : MonoBehaviour
                     animator.SetLookAtWeight(1);
                     animator.SetLookAtPosition(lookObj.position);
 
-                   // animator.SetIKPositionWeight(AvatarIKGoal.RightHand, 1);
-                    //animator.SetIKRotationWeight(AvatarIKGoal.RightHand, handsWight);
                     animator.SetIKPositionWeight(AvatarIKGoal.LeftHand, handsWight);
                     animator.SetIKPositionWeight(AvatarIKGoal.RightHand, handsWight);
+                    animator.SetIKHintPositionWeight(AvatarIKHint.LeftElbow, handsWight);
+                    animator.SetIKHintPositionWeight(AvatarIKHint.RightElbow, handsWight);
 
-                    animator.SetIKPosition(AvatarIKGoal.RightHand, rightHandPivot.position);
+
                     animator.SetIKPosition(AvatarIKGoal.LeftHand, leftHandPivot.position);
+                    animator.SetIKPosition(AvatarIKGoal.RightHand, rightHandPivot.position);
+                    animator.SetIKHintPosition(AvatarIKHint.LeftElbow, leftHintPivot.position);
+                    animator.SetIKHintPosition(AvatarIKHint.RightElbow, rightHintPivot.position);
                 }
             }
 

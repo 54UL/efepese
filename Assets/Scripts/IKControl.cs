@@ -25,13 +25,11 @@ public class IKControl : MonoBehaviour
     {
         if (animator)
         {
-
             //if the IK is active, set the position and rotation directly to the goal. 
             if (ikActive)
             {
-
                 // Set the look target position, if one has been assigned
-                if (lookObj != null)
+                if (lookObj)
                 {
                     animator.SetLookAtWeight(1);
                     animator.SetLookAtPosition(lookObj.position);

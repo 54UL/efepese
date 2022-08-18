@@ -110,7 +110,7 @@ public class NetworkMatch : MonoBehaviour
 
     void Start()
     {
-       networkManager = NetworkManager.Singleton;
+        networkManager = NetworkManager.Singleton;
         currentAddress = this.ServerIpInputField.text.Trim();
         currentPort = int.Parse(this.ServerPortInputField.text);
         gameNetworking = ServiceInjector.getSingleton<Networking>();
@@ -136,7 +136,7 @@ public class NetworkMatch : MonoBehaviour
         {
             if (networkManager.IsClient)
             {
-                string welcomeMessage = string.Format("Player joined, welcome:[{0}]", id.ToString());
+                string welcomeMessage = string.Format(" joined..., welcome:[{0}]", id.ToString());
                 LogInfo(welcomeMessage);
                 RenderShell(false);
                 EnableLobbyCamera(false);

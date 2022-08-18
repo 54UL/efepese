@@ -78,12 +78,9 @@ public class WeaponSystem : MonoBehaviour
             nextFire = Time.time + fireRate;
             OnShoot(isAiming);
             StartCoroutine(ShotEffect());
-            // Check if our raycast has hit anything
             if (Physics.Raycast(gunEnd.transform.position, gunEnd.transform.forward, out RaycastHit hit, weaponRange))
             {
                 hitPos = hit.point;
-               
-
                 if (OnBulletHit != null)
                     OnBulletHit(hit.transform.gameObject, gunDamage);
 
@@ -93,9 +90,7 @@ public class WeaponSystem : MonoBehaviour
             else
             {
                 hitPos = Vector3.zero;
-                //impactPoint.SetActive(false);
             }
-       
         }
     }
 
@@ -107,7 +102,7 @@ public class WeaponSystem : MonoBehaviour
         float computedPitch = Random.Range(-currentRecoil.pitchKickBackAngleRange, (currentRecoil.pitchKickBackAngleRange + currentRecoil.pitchKickBackAngleRange) * -1.0f);
         float computedRoll = Random.Range(-currentRecoil.rollKickBackAngleRange, currentRecoil.rollKickBackAngleRange);
         
-        Vector3 computedPos = new Vector3(
+        Vector3 computedPos = new Vector3 (
             Random.Range(-currentRecoil.positionKickBackRange.x, currentRecoil.positionKickBackRange.x), 
             Random.Range(-currentRecoil.positionKickBackRange.y, currentRecoil.positionKickBackRange.y), 
             Random.Range(-currentRecoil.positionKickBackRange.z, currentRecoil.positionKickBackRange.z)); // refactor this shit out

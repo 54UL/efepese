@@ -2,155 +2,177 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using EPS;
+using Unity.Netcode;
+using UnityEngine.InputSystem;
+using Unity.Netcode.Transports.UNET;
+using System;
+using EPS.Core.Services.Implementations;
 
 
-//TEST DESCRIPTION : SLICEMENT OF THE SCREEN AND PLAYER SPAWNING (WITHOUT BUSSINES LOGIC)
 public class NetworkMatch : MonoBehaviour
 {
     //Clasic vars
-    public Transform VehicleSpawnPoint;
-    public int MaxVehiclesToSpawn;
-    public bool ConectionStatus = false;
+    public GameObject LobbyCamera;
     
+    public bool ConectionStatus = false;
+    public string currentAddress;
+    public int currentPort;
+
     //Ui members
     public Transform ServerShellRoot;
     public Transform MatchesHolder;
+    public Transform gameLogsHolder;
     public GameObject matchUIdelegate;
+   
     [Space(10)]
-
     public Button CreateMatch;
     public Button SpawnPlayerBtn;
     public Button RefreshList;
     public Button ToggleConnect;
+
     [Space(10)]
     public InputField ServerIpInputField;
     public InputField ServerPortInputField;
     public InputField ClientPortInputField;
     public InputField MatchName;
-    public Text PingText;
+    public GameObject consoleLogPrefab;
+    public Text Health;
 
+    private InputSystem.PlayerActions _input;
+
+
+    private NetworkManager networkManager;
+  
     //DEPENDENCIES
-    // public DAC.IInputManager InputManagerService;
-    // public DAC.IPlayerManager PlayerManager;
-    // public DAC.IGameMode GameModeService;
-    // public DAC.Foundation.INetClient NetClient;
-    // public DAC.Foundation.ClientInfoArgs clientInfo;
+    public EPS.INetworking gameNetworking;
 
-    void joinMatch(int matchId)
+    public void SetUIHealth(double value)
     {
-        Debug.Log("match id :" + matchId);
+        Health.text = "Health:" + value + "%";
     }
 
-    void ConfigServerFields()
+    void LogInfo(string message)
     {
-        // this.NetClient.SetClientPort(int.Parse(this.ClientPortInputField.text));
-        // this.NetClient.SetPort(int.Parse(this.ServerPortInputField.text));
-        // this.NetClient.SetServerIP(this.ServerIpInputField.text.Trim());
+        TMPro.TextMeshProUGUI text =  GameObject.Instantiate(consoleLogPrefab, gameLogsHolder).GetComponent<TMPro.TextMeshProUGUI>();
+        text.SetText("[INFO]  " + message);
     }
-
-    void GetPoolList()
-    {
-        // this.NetClient.GetActivePools((DAC.Foundation.PoolInfo poolInfo) =>
-        // {
-        //     foreach (var netMatch in poolInfo.pools)
-        //     {
-        //         var uiElement = GameObject.Instantiate(matchUIdelegate);
-        //         uiElement.transform.parent = MatchesHolder;
-        //         uiElement.transform.GetChild(0).GetComponent<Text>().text = netMatch.PoolName;
-        //         uiElement.transform.GetChild(1).GetComponent<Button>().onClick.AddListener(() => { joinMatch(netMatch.PoolId); });
-        //     }
-        // });
-    }
-
 
     void RenderShell(bool visible)
     {
         ServerShellRoot.gameObject.SetActive(visible);
+        _input.cursorInputForLook = !visible;
+        _input.cursorLocked = !visible;
+        Health.enabled = !visible;
+    }
+
+    
+    IEnumerator NetworkStatus(NetworkSytemType netType,  bool connect = false)
+    {
+        if (connect)
+        {
+            gameNetworking.Start(netType, currentAddress, currentPort);
+        }
+        else
+        {
+            gameNetworking.Stop();
+        }
+        
+        yield return new WaitForFixedUpdate();
     }
 
     void ToggleConnectAction()
     {
-        if (!ConectionStatus)
+        currentAddress = this.ServerIpInputField.text.Trim();
+        currentPort = int.Parse(this.ServerPortInputField.text);
+
+        if (!networkManager.IsConnectedClient)
         {
-            ConfigServerFields();
-        //     this.NetClient.Connect((DAC.Foundation.ClientInfoArgs clientInfoData) =>
-        //    {
-        //        clientInfo = clientInfoData;
-        //        this.ToggleConnect.GetComponentInChildren<Text>().text = "Disconnect";
-        //        ConectionStatus = true;
-        //        GetPoolList();
-        //        RenderShell(false);
-        //    });
+            LogInfo("Joning match...");
+            this.ToggleConnect.GetComponentInChildren<Text>().text = "Disconnect";
+            StartCoroutine(NetworkStatus(NetworkSytemType.CLIENT, true));
         }
         else
         {
+            LogInfo("Player disconnected");
             this.ToggleConnect.GetComponentInChildren<Text>().text = "Connect";
-            // this.NetClient.Disconnect();
             ConectionStatus = false;
+            StartCoroutine(NetworkStatus(NetworkSytemType.CLIENT, false));
+            EnableLobbyCamera(true);
+            RenderShell(true);
         }
     }
 
-    void RefreshListAction()
+    private void EnableLobbyCamera(bool enable)
     {
-
+        LobbyCamera.SetActive(enable);
     }
 
-    void CreateMatchAction()
-    {
-
-    }
-
-    //PLAYER SPAWNING TEST
     void Start()
     {
-        //Injections
-        // InputManagerService = (DAC.IInputManager)ServiceInjector.Inject("DAC.InputManager");
-        // PlayerManager = (DAC.IPlayerManager)ServiceInjector.Inject("DAC.PlayerManager");
-        // GameModeService = (DAC.IGameMode)ServiceInjector.Inject("DAC.GameMode");
-        // NetClient = (DAC.Foundation.INetClient)ServiceInjector.Inject("DAC.Foundation.BinaryNetClient");
-        SpawnPlayerBtn.onClick.AddListener(() => { this.SpawnLocalPlayer(); });
-        // PlayerManager.SetSpawnPoint(VehicleSpawnPoint);
-        // Debug.Log("MATCH SETTED TO FREE MODE");
-        // this.GameModeService.SetMatchType(DAC.MatchType.FREE);
-        this.ToggleConnect.onClick.AddListener(() => { ToggleConnectAction(); });
+       networkManager = NetworkManager.Singleton;
+        currentAddress = this.ServerIpInputField.text.Trim();
+        currentPort = int.Parse(this.ServerPortInputField.text);
+        gameNetworking = ServiceInjector.getSingleton<Networking>();
+        var inputService = EPS.ServiceInjector.getSingleton<InputService>();
+        _input = inputService.GetInputActions();
 
-        // this.NetClient.OnSpawn((DAC.Foundation.SpawnArgs spawnArgs) =>
-        // {
-        //     SpawnNetworkPlayer(spawnArgs.PlayerId);
-        // });
+        SpawnPlayerBtn.onClick.AddListener(() => {
+           
+        });
+
+        ToggleConnect.onClick.AddListener(() => {
+            ToggleConnectAction();
+        });
+
+        CreateMatch.onClick.AddListener(() => {
+            string message = string.Format("Match created invite friends via direct ip [{0}] port [{1}]: ", currentAddress, currentPort);
+            RenderShell(false);
+            EnableLobbyCamera(false);
+            StartCoroutine(NetworkStatus(NetworkSytemType.HOST, true));
+        });
+
+        networkManager.OnClientConnectedCallback += (ulong id) =>
+        {
+            if (networkManager.IsClient)
+            {
+                string welcomeMessage = string.Format("Player joined, welcome:[{0}]", id.ToString());
+                LogInfo(welcomeMessage);
+                RenderShell(false);
+                EnableLobbyCamera(false);
+                ConectionStatus = true;
+            }
+            else
+            {
+                LogInfo("not a client");
+                ConectionStatus = false;
+            }
+        };
+
+        var transport = networkManager.transform.GetComponent<UNetTransport>();
+        transport.OnTransportEvent += OnTransportEvent;
+
+        LogInfo("efepese game ready...");
     }
 
-
-    private void SpawnNetworkPlayer(int playerId)
+    private void OnTransportEvent(NetworkEvent eventType, ulong clientId, ArraySegment<byte> payload, float receiveTime)
     {
-        // NetworkPlayer instacedControl = Instantiate(new GameObject("PLAYER:network")).AddComponent<NetworkPlayer>();
-        // instacedControl.NetData.Id = playerId;
-        // PlayerManager.InstancePlayer(instacedControl, DAC.PlayerType.NETWORK);
-    }
-
-    public void SpawnLocalPlayer()
-    {
-        // KeyboardController instacedControl = Instantiate(new GameObject("LOCAL_PLAYER")).AddComponent<KeyboardController>();
-        // PlayerManager.InstancePlayer(instacedControl, DAC.PlayerType.LOCAL);
-        // instacedControl.LocalPlayerId = clientInfo.ClientId;
-        // instacedControl.NetClientData.Id = clientInfo.ClientId;
-        // var spawnArgs = new DAC.Foundation.SpawnArgs()
-        // {
-        //     PrefabName = "VEHICLE",
-        //     PlayerId = clientInfo.ClientId
-        // };
-        // NetClient.SpawnObject(spawnArgs);
+        var warning = "OnTransportEvent: " + eventType;
+        Debug.LogWarning(warning);
+        LogInfo(warning);
     }
 
     // NETWORK MATCH TEST
     bool ShellStatus;
+
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if (Keyboard.current[Key.Escape].wasPressedThisFrame)
         {
             RenderShell(ShellStatus);
             ShellStatus = !ShellStatus;
         }
+
         // this.PingText.text = "PING:" + (NetClient.GetUpssertLatency()*1000).ToString("f2")+"s";
     }
 }

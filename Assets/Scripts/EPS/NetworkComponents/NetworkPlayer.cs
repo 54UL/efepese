@@ -7,33 +7,97 @@ namespace EPS
     public class NetworkPlayer : NetworkBehaviour
     {
         //Game systems
-        public IPlayerControl currentControl;
         public WeaponSystem currentWeapon;
         public FirstPersonController fpp;
-        public GameObject root;
-        public GameObject camera;
-        public GameObject gunPivot;
+        public Camera playerCamera;
+        public CharacterController cc;
+        public Animator animator;
+        public GameObject characterModel;
+        public double CurrentHealth = 100;
+        public Transform SpawnPoint;
+        private static readonly int VelocityZ = Animator.StringToHash("VelocityZ");
+        private static readonly int VelocityX = Animator.StringToHash("VelocityX");
+        public NetworkMatch Hud;
 
-        //Game components
-        public Transform spawnPoint;
-        public float currentHealth = 100;   
 
-        //Network vars
-        public NetworkVariable<Vector3> Position = new NetworkVariable<Vector3>();
-        public NetworkVariable<bool> IsAlive = new NetworkVariable<bool>();
-        public Camera cameraControl;
-  
         public override void OnNetworkSpawn()
         {
-            //MoveToSpawn(); // Move to spawn point
-            PreparePlayer();
+            characterModel = this.transform.Find("character").gameObject;
+            fpp = GetComponent<FirstPersonController>();
+            currentWeapon = GetComponent<WeaponSystem>();
+            playerCamera = GetComponentInChildren<Camera>();
+            cc = GetComponent<CharacterController>();
+            animator = characterModel.GetComponent<Animator>();
+            currentWeapon.OnBulletHit += ShootSomeOne;
+            Hud = FindObjectOfType<NetworkMatch>();
+            Hud.SetUIHealth(CurrentHealth);
+
+            fpp.IsClient = IsClient;
+            fpp.currentNetworkPlayer = this;
+            ConfigurePlayer(IsLocalPlayer);
+            EnableComponents(IsLocalPlayer);
         }
 
-
-       [ServerRpc]
-       private void EnableComponentsServerRpc(bool enabled)
+        void UpdateObjectLayers(Transform parent, int layer)
         {
-            EnableLocalPlayerComponentsClientRpc(enabled);
+            foreach (var childTransform in parent.GetComponentsInChildren<Transform>(true))
+                childTransform.gameObject.layer = layer;
+        }
+
+        private void SpawnPlayer()
+        {
+            if (IsClient)
+            {
+                PlacePlayerAtServerRpc(SpawnPoint.transform.position, Quaternion.identity);
+            }
+            else
+            {
+                PlacePlayerAtClientRpc(SpawnPoint.transform.position, Quaternion.identity);
+            }
+        }
+
+        private void ConfigurePlayer(bool IsLocalPlayer)
+        {
+            int invisibleMask = LayerMask.NameToLayer("Invisible");
+            int visibleMask = LayerMask.NameToLayer("Default");
+
+            if (IsLocalPlayer)
+            {
+                UpdateObjectLayers(characterModel.transform, invisibleMask);
+                UpdateObjectLayers(currentWeapon.gunPivot, visibleMask);
+            }
+            else
+            {
+                UpdateObjectLayers(characterModel.transform, visibleMask);
+                UpdateObjectLayers(currentWeapon.gunPivot, invisibleMask);
+            }
+
+            SpawnPlayer();
+        }
+
+        private void EnableComponents(bool enabled)
+        {
+            fpp.enabled = enabled;
+            playerCamera.enabled = enabled;
+            currentWeapon.enabled = enabled;
+        }
+
+        public void SendInputs(Vector3 movement, Vector3 rotation, Quaternion aimOrentation, Vector3 inputDirection)
+        {
+            this.playerCamera.transform.localRotation = aimOrentation; // only pitch
+            this.transform.Rotate(rotation); // only yaw
+            cc.Move(movement);//player physics 
+            animator.SetFloat(VelocityX, inputDirection.x);
+            animator.SetFloat(VelocityZ, inputDirection.z);
+        }
+
+        [ServerRpc]
+        void CalculatePlayerMovementServerRpc(Vector3 movement, Vector3 rotation, Quaternion aimOrentation)
+        {
+            //Physics
+            this.playerCamera.transform.localRotation = aimOrentation; // only pitch
+            this.transform.Rotate(rotation); // only yaw
+            cc.Move(movement);//player physics
         }
 
         [ClientRpc]
@@ -41,67 +105,42 @@ namespace EPS
         private void EnableLocalPlayerComponentsClientRpc(bool enable)
         {
             fpp.enabled = enable;
-            cameraControl.enabled = enable;
+            playerCamera.enabled = enable;
             currentWeapon.enabled = enable;
-            
-            //transform.position = Position.Value;
-
-            //if (currentWeapon != null && enable)          
-            //    currentWeapon.OnBulletHit += ShootSomeOne; // args: hit, damage 
-        }
-
-        public void PreparePlayer()
-        {
-            if (IsOwner)
-            {
-                fpp.enabled = true;
-                camera.SetActive(true);
-                currentWeapon.enabled = true;
-                //root.layer &= LayerMask.GetMask("default");
-
-            }
-            else
-            {
-                fpp.enabled = false;
-                camera.SetActive(false);
-                currentWeapon.enabled = false;
-            }
-        }
-
-        public void MoveToSpawn()
-        {
-            transform.position = spawnPoint.transform.position;
-            Position.Value =  transform.position;
         }
 
         public void DecreaseHealth(NetworkPlayer player, float value)
         {
-            player.currentHealth -= value;
-            player.UpdatePlayerHealthClientRpc(player.currentHealth);
-
-            if (player.currentHealth <= 0)
+            if (player.CurrentHealth > 0)
             {
                 //Disable fpp control
                 //Show respawn screen (todo)
-                Debug.Log("Player dead:" + player.OwnerClientId.ToString());
+                player.CurrentHealth -= value;
+                player.UpdatePlayerHealthClientRpc(player.CurrentHealth);
+            }
+            else
+            {
+                player.UpdatePlayerHealthClientRpc(100.0f);
+                player.PlacePlayerAtClientRpc(SpawnPoint.position, Quaternion.identity);
             }
         }
 
-        public void ShootSomeOne(GameObject target, float damageToDeal){
+        public void ShootSomeOne(GameObject target, float damageToDeal) {
             var networkPlayer = target.GetComponent<NetworkPlayer>();
             if (networkPlayer == null) return;
 
             Debug.Log("Player hit!: " + target.gameObject.name);
-            if (IsClient){
+
+            if (IsClient) {
                 ShootServerRpc(networkPlayer, damageToDeal);
             }
-            else{
+            else {
                 DecreaseHealth(networkPlayer, damageToDeal);
             }
         }
 
         [ServerRpc]
-        void ShootServerRpc(NetworkBehaviourReference target,float damageToDeal)
+        void ShootServerRpc(NetworkBehaviourReference target, float damageToDeal)
         {
             if (target.TryGet(out NetworkPlayer targetObject))
             {
@@ -114,10 +153,37 @@ namespace EPS
         }
 
         [ClientRpc]
-        void UpdatePlayerHealthClientRpc(float healthValue)
+        void UpdatePlayerHealthClientRpc(double healthValue)
         {
             Debug.Log("Updated damage: " + healthValue);
-            currentHealth = healthValue;
+            CurrentHealth = healthValue;
+
+            if (IsOwner)
+                Hud.SetUIHealth(CurrentHealth);
         }
+
+        [ClientRpc]
+        void PlacePlayerAtClientRpc(Vector3 position, Quaternion orentation)
+        {
+            if (SpawnPoint != null)
+            {
+                this.transform.SetPositionAndRotation(position, orentation);
+            }
+            else
+                Debug.LogError("No spawpoint specified to respawn player");
+        }
+
+        [ServerRpc]
+        void PlacePlayerAtServerRpc(Vector3 position, Quaternion orentation)
+        {
+            if (SpawnPoint != null)
+            {
+                this.transform.SetPositionAndRotation(position, orentation);
+                PlacePlayerAtClientRpc(position, orentation);
+            }
+            else
+                Debug.LogError("No spawpoint specified to respawn player");
+        }
+
     }
 }

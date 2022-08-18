@@ -6,6 +6,13 @@ using EPS.Core.Services.Implementations;
 using UnityEngine.InputSystem;
 #endif
 
+namespace EPS
+{
+    //TODO: MOVER ESTO A LA API
+    public enum WeaponStateFlags {idle, shooting, reloading, swapingWeapons, dropingWeapon}
+    public enum PlayerSateFlags {idle, walking, running, crouch, jumping, leaning}
+}
+
 public class WeaponSystem : MonoBehaviour
 {
     //Scene objects and prefabs
@@ -16,6 +23,8 @@ public class WeaponSystem : MonoBehaviour
     public Transform  gunPivot;
     public Transform gunModel;
     public InputSystem.PlayerActions _input;
+    public bool runningAnimation = false;
+    public bool antiBounce = false;
 
     //RECOIL PROTOTYPE
     [Header("Recoil system")]
@@ -28,9 +37,12 @@ public class WeaponSystem : MonoBehaviour
     
     [Header("Gun sway")]
     public float swaySpeed = 10;
+    public float inverseRotationInfluence = 2;
+    public float movementInfluence = 2;
 
     [Header("Gun Aim")]
     public float aimSpeed = 10;
+    public float aimElapsedTime = 0;
 
     [Header("Weapon descriptor")]
     //Weapon descriptor
@@ -43,38 +55,31 @@ public class WeaponSystem : MonoBehaviour
     private float nextFire;                   
     private Vector3 hitPos;
     private WaitForSeconds shotDuration = new WaitForSeconds(0.07f);    
-    private AudioSource gunAudio;   
-   
+    private AudioSource gunAudio;
+
     //EVENTS
     public delegate void BulletHit(GameObject target, float damage);
     public event BulletHit OnBulletHit;
 
-    void WeaponLogic()
+    void WeaponLogic(bool isAiming)
     {
         // Check if the player has pressed the fire button and if enough time has elapsed since they last fired
         if (Mouse.current.leftButton.isPressed && Time.time > nextFire)
         {
             // Update the time when our player can fire next
             nextFire = Time.time + fireRate;
-            // Start our ShotEffect coroutine to turn our laser line on and off
-            // StartCoroutine(ShotEffect());
-            RaycastHit hit;
 
+            StartCoroutine(ShotEffect());
             // Check if our raycast has hit anything
-            if (Physics.Raycast(gunEnd.transform.position, gunEnd.transform.forward, out hit, weaponRange))
+            if (Physics.Raycast(gunEnd.transform.position, gunEnd.transform.forward, out RaycastHit hit, weaponRange))
             {
-                OnShoot(); //XUL TODO: TEST THIS FIRST...
-                //StartCoroutine(ShotEffect());
-                // Set the end position for our laser line 
-                //impactPoint.SetActive(true);
                 hitPos = hit.point;
-                //impactPoint.transform.position = hit.point;
+                OnShoot(isAiming); //XUL TODO: TEST THIS FIRST...
+
                 if (OnBulletHit != null)
                     OnBulletHit(hit.transform.gameObject, gunDamage);
 
-                // Check if the object we hit has a rigidbody attached
                 if (hit.rigidbody != null)
-                    // Add force to the rigidbody we hit, in the direction from which it was hit
                     hit.rigidbody.AddForce(-hit.normal * hitForce);
             }
             else
@@ -85,31 +90,28 @@ public class WeaponSystem : MonoBehaviour
         }
     }
 
-    void OnShoot()
+  
+    void OnShoot(bool IsAiming)
     {
-        //If already shooting restart
-        if (kickElapsedTime > 0)
-        {
-            kickElapsedTime = 0;
-        }
-
         //procedural Recoil system
         float computedYaw = Random.Range(-currentRecoil.yawKickBackAngleRange, currentRecoil.yawKickBackAngleRange);
         float computedPitch = Random.Range(-currentRecoil.pitchKickBackAngleRange, currentRecoil.pitchKickBackAngleRange);
+        float computedRoll = Random.Range(-currentRecoil.rollKickBackAngleRange, currentRecoil.rollKickBackAngleRange);
         
-        Vector3 kickBackPos = new Vector3(0, 0, currentRecoil.kickBackDistance) + startGunPivotPosition;
-        Quaternion kickBackRot = Quaternion.Euler(computedPitch, computedYaw, 0) * startGunPivotRotation;
+        Vector3 computedPos = new Vector3(
+            Random.Range(-currentRecoil.positionKickBackRange.x, currentRecoil.positionKickBackRange.x), 
+            Random.Range(-currentRecoil.positionKickBackRange.y, currentRecoil.positionKickBackRange.y), 
+            Random.Range(-currentRecoil.positionKickBackRange.z, currentRecoil.positionKickBackRange.z)); // refactor this shit out
 
-        gunPivot.transform.localPosition = kickBackPos;
-        gunPivot.transform.localRotation = kickBackRot;
+        Vector3 aimPos = IsAiming ? aimPoint.localPosition : startGunPivotPosition;
+        Vector3 kickBackPos =  aimPos + computedPos;
+        Quaternion kickBackRot = Quaternion.Euler(computedPitch, computedYaw, computedRoll) * startGunPivotRotation;
 
-        StartCoroutine(KickBackAnimation(startGunPivotPosition, startGunPivotRotation, currentRecoil.recoilSpringForce));
-    }
-
-    void KickInInterpolation(Vector3 kickBackPosition, Quaternion kickBackRotation )
-    {
-        gunPivot.transform.localPosition = Vector3.Lerp(gunPivot.localPosition, kickBackPosition, Time.smoothDeltaTime * swaySpeed);
-        gunPivot.transform.localRotation = Quaternion.Slerp(gunPivot.localRotation, kickBackRotation, Time.smoothDeltaTime * swaySpeed);
+        if (!runningAnimation)
+        {
+            runningAnimation = true;
+            StartCoroutine(KickBackAnimation(kickBackPos, kickBackRot, currentRecoil.recoilSpringForce));
+        }
     }
 
     private IEnumerator KickBackAnimation(Vector3 kickBackPos,Quaternion kickBackRotation, float force)
@@ -118,70 +120,64 @@ public class WeaponSystem : MonoBehaviour
         {
             gunPivot.transform.localPosition = Vector3.Lerp(gunPivot.localPosition, kickBackPos, kickElapsedTime);
             gunPivot.transform.localRotation = Quaternion.Slerp(gunPivot.localRotation, kickBackRotation, kickElapsedTime);
-            kickElapsedTime += Time.smoothDeltaTime * force;
-            yield return shotDuration;
+            kickElapsedTime += Time.deltaTime * force;
+            yield return null;
         }
-        //kickElapsedTime = 0;s
+        kickElapsedTime = 0;
+        runningAnimation = false;
     }
 
-
-    //TODO: TEST
-    
-    
     void GunSway(Vector2 lookInput)
     {
         Vector3 swayRotation = startMoodelRotation.eulerAngles;
-        Quaternion newPivotRotation = Quaternion.Euler(swayRotation.x + lookInput.y, swayRotation.y + lookInput.x, 0); ;
-        gunModel.localRotation = Quaternion.Slerp(gunModel.localRotation,newPivotRotation, Time.smoothDeltaTime * swaySpeed);
+        Quaternion newPivotRotation = Quaternion.Euler(
+            swayRotation.x + (lookInput.y * movementInfluence),
+            swayRotation.y + (lookInput.x * movementInfluence), 
+            lookInput.x * inverseRotationInfluence); 
+        gunModel.localRotation = Quaternion.Slerp(gunModel.localRotation,newPivotRotation, Time.deltaTime * swaySpeed);
     }
 
-
-    void GunAim()
+    private void AimAnimation(bool aimIn)
     {
-        gunPivot.transform.localPosition = Vector3.Lerp(gunPivot.localPosition, aimPoint.localPosition, aimSpeed * Time.smoothDeltaTime);     
-    }
+        Vector3 target;
 
-    void AimIdle()
-    {
-        gunPivot.transform.localPosition = Vector3.Lerp(gunPivot.localPosition, startGunPivotPosition, aimSpeed * Time.smoothDeltaTime);
-    }
-
-    // private IEnumerator SwayAnimation(Quaternion to)
-    // {
-    //     while (elapesedSwayTime < 1.0)
-    //     {
-    //         yield return new WaitForSeconds(0.16);
-    //     }
-    //     elapesedSwayTime = 0;
-    // }
-
-    void WeaponAnimation()
-    {
-        
-    }
-
-    void WeaponAim()
-    {
-        
-        if (Mouse.current.rightButton.isPressed)
+        if (!antiBounce) 
         {
-
+            antiBounce = true;
+            aimElapsedTime = 0;
         }
+
+        if (aimElapsedTime < 1.0)
+        {
+            if (aimIn)
+            {
+                target = aimPoint.localPosition;
+            }
+            else
+            {
+                target = startGunPivotPosition;
+            }
+
+            gunPivot.transform.localPosition = Vector3.Lerp(gunPivot.localPosition, target, aimElapsedTime);
+            gunPivot.transform.localRotation = Quaternion.Slerp(gunPivot.localRotation, startGunPivotRotation, aimElapsedTime);
+
+            aimElapsedTime += Time.deltaTime * aimSpeed;
+        }
+        else
+        {
+            aimElapsedTime = 0;
+            antiBounce = false;
+        }
+            
     }
 
     private IEnumerator ShotEffect()
     {
-        // Play the shooting sound effect
-        //gunAudio.Play();
-
-        // Turn on our line renderer
+        _input.look.y += currentRecoil.upsideRecoil;
         muzzleFlash.SetActive(true);
-        //impactPoint.SetActive(true);
-        //Wait for .07 seconds
         yield return shotDuration;
-        // Deactivate our line renderer after waiting
         muzzleFlash.SetActive(false);
-        //impactPoint.SetActive(false);
+        _input.look.y = 0;
     }
     
     public void OnDrawGizmos()
@@ -200,19 +196,24 @@ public class WeaponSystem : MonoBehaviour
         startMoodelRotation = gunModel.localRotation; 
     }
 
-
-    public Vector2 lookAcceleration;
-    private void LateUpdate()
+    private IEnumerator TickSystem()
     {
         var aim = Mouse.current.rightButton.isPressed;
-        var aimRelased = Mouse.current.rightButton.wasReleasedThisFrame;
 
         if (aim)
-            GunAim();
-        else
-            AimIdle();
+        {
+            AimAnimation(aim);
+        }
+        else if (!runningAnimation)
+            AimAnimation(aim);
 
         GunSway(_input.look);
-        WeaponLogic();
+        WeaponLogic(aim);
+        yield return new WaitForSeconds(0.016f);
+    }
+
+    private void Update()
+    {
+        StartCoroutine(TickSystem());
     }
 }

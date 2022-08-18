@@ -33,7 +33,7 @@ namespace Unity.Netcode.Samples
             else
             {
                 GUILayout.Label($"Mode: {(networkManager.IsHost ? "Host" : networkManager.IsServer ? "Server" : "Client")}");
-
+                /*
                 // "Random Teleport" button will only be shown to clients
                 if (networkManager.IsClient)
                 {
@@ -50,8 +50,9 @@ namespace Unity.Netcode.Samples
                         }
                     }
                 }
+            
+                */
             }
-
             GUILayout.EndArea();
         }
     }

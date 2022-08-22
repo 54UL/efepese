@@ -1,18 +1,22 @@
 using System.Collections;
 using System.Collections.Generic;
-using Rewired;
+
 using UnityEngine;
 using System.Linq;
+using EPS.Api;
+using System;
+using EPS.Foundation;
+
 
 //FUTURE TODOS:QUITAR TODO LO RELACIONADO CON EL VIEW STACK Y DEJARLO EN UN STACK PARA SIEMPRE(TODA LA APP)
 namespace EPS
 {
     //REFACTOR MODELS
-    public class UIManager : IUIManager, EPS.Foundation.IService
+    public class UIManager : EPS.Foundation.IService
     {
         //IUIManager
-        Dictionary<EPS.StackingLevel, List<EPS.IUIView>> registeredViews;
-        Dictionary<EPS.StackingLevel, Stack<EPS.IUIView>> viewsStack;
+        Dictionary<StackingLevel, List<IUIView>> registeredViews;
+        Dictionary<StackingLevel, Stack<IUIView>> viewsStack;
         bool isTopHidden = false; //WTFf???? no se usa considerar descartar
         public UIManager()
         {
@@ -161,14 +165,19 @@ namespace EPS
 
         public void OnInit(DependencyManager manager)
         {
-            registeredViews = new Dictionary<EPS.StackingLevel, List<EPS.IUIView>>();
-            viewsStack = new Dictionary<EPS.StackingLevel, Stack<EPS.IUIView>>();
+            registeredViews = new Dictionary<StackingLevel, List<IUIView>>();
+            viewsStack = new Dictionary<StackingLevel, Stack<IUIView>>();
             // throw new System.NotImplementedException();
         }
 
         public void OnReset()
         {
             //throw new System.NotImplementedException();
+        }
+
+        Func<IEnumerator> IService.LoopCourrutine()
+        {
+            return null;
         }
     }
 }

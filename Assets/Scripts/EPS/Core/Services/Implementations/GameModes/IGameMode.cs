@@ -1,8 +1,8 @@
 namespace EPS.Core.Services.Implementations
 {
-    public interface GameMode 
+    public interface IGameMode 
     {
-        void    OnStartGame();
+        void OnStartGame();
         void    OnCheckEndRules();
         string  ModeInfo();
         void    ForceEnd();

@@ -1,20 +1,25 @@
 namespace EPS.Core.Services.Implementations
 {
-    public class EmptyMode: GameMode
+    public class EmptyMode : IGameMode
     {
-        public override void OnStartGame() 
+        public void ForceEnd()
         {
-            
-        }
-        
-        public override void OnCheckEndRules()
-        {
-            
+            throw new System.NotImplementedException();
         }
 
-        public override void OnGameFinished()
+        public string ModeInfo()
         {
+            throw new System.NotImplementedException();
+        }
 
+        public void OnCheckEndRules()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void OnStartGame()
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

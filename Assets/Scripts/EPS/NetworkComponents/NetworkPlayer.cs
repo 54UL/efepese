@@ -83,6 +83,7 @@ namespace EPS
             playerCamera.enabled = enabled;
             currentWeapon.enabled = enabled;
         }
+        
         //TODO: AQUI DEBERIA DE IR TODO EL FLUJO DE DATOS AUTORITARIO (SE ENVIA AL SERVIDOR Y DEBE DE REGRESAR EL FEEDBACK DEL TRANSFORM) (NO USAR ClientTransforms autorativos)
         public void SendInputs(Vector3 movement, Vector3 rotation, Quaternion aimOrentation, Vector3 inputDirection)
         {

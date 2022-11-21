@@ -3,34 +3,42 @@ using System.Collections;
 using UnityEngine.InputSystem;
 using Object = UnityEngine.Object;
 using InputSystem;
+using EPS.Api;
 
 namespace EPS.Core.Services.Implementations
 {
-    public class MatchManager: EPS.Foundation.IService
-    {   
+    public class MatchManager : IMatchManager, Foundation.IService
+    {
+        private IGameMode   CurrentGameMode { get; set; }
+        private INetworking Network { get; set; }
+        private IUIManager  UIManager { get; set; }
+        private MatchType   CurrentMatchType { get; set; }
 
         //Match manager
         public void SetGameMode(IGameMode gameMode)
         {
-
+            CurrentGameMode = gameMode;
         }
 
-       public void EndGame(IGameMode gameMode)
-       {
-
-       }
+        public void EndGame()
+        {
+            CurrentGameMode.EndGame();
+            CurrentGameMode = null;
+        }
 
         public void OnEnGameForced()//add exception message
         {
-
+            CurrentGameMode.ForceEnd();
+            CurrentGameMode = null;
         }
 
         private void SpawnPlayers()
         {
             //netcode logic to  spawn player prefabs (server side)
-           //Add netwkork player OnNetworkSpawn logic
+            //Add netwkork player OnNetworkSpawn logic
+            CurrentGameMode.OnStartGame();
         }
-        
+
         private void KillPlayer()
         {
 
@@ -41,12 +49,20 @@ namespace EPS.Core.Services.Implementations
 
         }
 
-        private void SendPlayerInputs()//Player inputs: Vector3 movement, Vector3 rotation, Quaternion aimOrentation, Vector3 inputDirection
+        public void SendPlayerInputs()//Player inputs: Vector3 movement, Vector3 rotation, Quaternion aimOrentation, Vector3 inputDirection
         {
 
         }
 
-        private void 
+        public void SetMatchType(MatchType matchType)
+        {
+            CurrentMatchType = matchType;
+        }
+
+        public MatchType GetMatchType()
+        {
+            return MatchType.EMPTY;
+        }
 
         //IService
         public string ReferencedName()

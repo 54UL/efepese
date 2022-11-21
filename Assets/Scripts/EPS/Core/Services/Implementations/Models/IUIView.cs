@@ -1,3 +1,5 @@
+using UnityEngine;
+
 namespace EPS
 {
     public enum StackingLevel { NONE, GUI, CANVAS };

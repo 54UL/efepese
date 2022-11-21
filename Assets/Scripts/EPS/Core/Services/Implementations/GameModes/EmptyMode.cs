@@ -2,6 +2,11 @@ namespace EPS.Core.Services.Implementations
 {
     public class EmptyMode : IGameMode
     {
+        public void EndGame()
+        {
+            throw new System.NotImplementedException();
+        }
+
         public void ForceEnd()
         {
             throw new System.NotImplementedException();

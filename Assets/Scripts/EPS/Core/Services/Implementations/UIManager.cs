@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-
 using UnityEngine;
 using System.Linq;
 using EPS.Api;
@@ -12,12 +11,13 @@ using EPS.Foundation;
 namespace EPS
 {
     //REFACTOR MODELS
-    public class UIManager : EPS.Foundation.IService
+    public class UIManager : IUIManager, Foundation.IService
     {
         //IUIManager
         Dictionary<StackingLevel, List<IUIView>> registeredViews;
         Dictionary<StackingLevel, Stack<IUIView>> viewsStack;
         bool isTopHidden = false; //WTFf???? no se usa considerar descartar
+
         public UIManager()
         {
 
@@ -126,7 +126,7 @@ namespace EPS
                 Debug.LogError("[UI MANAGER]:VIEW NOT FOUND NAME:" + viewName);
         }
 
-        public void Register(StackingLevel level, IUIView view, bool isMain = false)
+        public void RegisterView(StackingLevel level, IUIView view, bool isMain = false)
         {
             List<IUIView> views;
 

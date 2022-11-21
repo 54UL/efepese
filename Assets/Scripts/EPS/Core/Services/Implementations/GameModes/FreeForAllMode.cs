@@ -2,7 +2,7 @@ namespace EPS.Core.Services.Implementations
 {
     public class FreeForAll: IGameMode
     {
-    
+        
         public string ModeInfo()
         {
             throw new System.NotImplementedException();
@@ -19,6 +19,11 @@ namespace EPS.Core.Services.Implementations
         }
 
         public void OnCheckEndRules()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void EndGame()
         {
             throw new System.NotImplementedException();
         }

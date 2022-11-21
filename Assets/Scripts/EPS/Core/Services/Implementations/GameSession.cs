@@ -9,6 +9,7 @@ namespace EPS.Core.Services.Implementations
     public class GameSession: EPS.Foundation.IService
     {
         private EPS.Networking m_networking;
+        private EPS.IMatchManager MatchManager { get; set; }
 
         //GameSession
         public bool HostSession(string GameName)
@@ -16,6 +17,7 @@ namespace EPS.Core.Services.Implementations
             //Start networking systems
             //Start Match systems fro creating a match
             //Show spawn screen UI
+
             return false;
         }
 
@@ -41,7 +43,7 @@ namespace EPS.Core.Services.Implementations
         public void OnInit(DependencyManager manager)
         {
             m_networking = ServiceInjector.getSingleton<Networking>();
-
+            MatchManager = ServiceInjector.getSingleton<MatchManager>();
         }
 
         public void Loop()

@@ -20,7 +20,7 @@ public class EntryPoint : MonoBehaviour
     {
         //Dependecy system initialization
         EPS.ServiceInjector.SetDependencyManager(DependencySystem);
-        EPS.DependencyManager.RegisterService<EPS.GameMode>();
+        //EPS.DependencyManager.RegisterService<EPS.GameMode>();
         EPS.DependencyManager.RegisterService<InputService>();
         EPS.DependencyManager.RegisterService<EPS.Networking>();
 

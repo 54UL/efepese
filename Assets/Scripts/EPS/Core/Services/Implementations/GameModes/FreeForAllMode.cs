@@ -1,4 +1,4 @@
-namespace EPS.Core.Services.Implementations
+namespace EPS.Core
 {
     public class FreeForAll: IGameMode
     {
@@ -24,6 +24,16 @@ namespace EPS.Core.Services.Implementations
         }
 
         public void EndGame()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public object GetGameValue(string name)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void SetGameValue(string name, object value)
         {
             throw new System.NotImplementedException();
         }

@@ -8,11 +8,11 @@ using EPS.Api;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UNET;
 
-namespace EPS
+namespace EPS.Core
 {
     public enum NetworkSytemType { UNDEFINED, HOST, CLIENT, SERVER };
 
-    public class Networking : EPS.INetworking, EPS.Foundation.IService
+    public class Networking : INetworking, EPS.Foundation.IService
     {
         private NetworkSytemType currentSystemType;
      
@@ -20,6 +20,30 @@ namespace EPS
         {
             
         }
+
+        //TODO: IMPLENT CALLBACK REGISTER HERE
+        //void ConfigureNetworking()
+        //{
+        //    networkManager.OnClientConnectedCallback += (ulong id) =>
+        //    {
+        //        if (networkManager.IsClient)
+        //        {
+        //            string welcomeMessage = string.Format("Hello : {0} :3 (player connected)", id.ToString());
+        //            LogInfo(welcomeMessage);
+        //            //RenderShell(false);
+        //            EnableLobbyCamera(false);
+        //            ConectionStatus = true;
+        //        }
+        //        else
+        //        {
+        //            LogInfo("Not a client");
+        //            ConectionStatus = false;
+        //        }
+        //    };
+
+        //    var transport = networkManager.transform.GetComponent<UNetTransport>();
+        //    transport.OnTransportEvent += OnTransportEvent;
+        //}
 
         //INetworking
         private void ApprovalCheck(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)
@@ -54,7 +78,6 @@ namespace EPS
             currentSystemType = type;
             // networkManager.ConnectionApprovalCallback = ApprovalCheck;
 
-       
             switch (type)
             {
                 case NetworkSytemType.HOST:
@@ -102,6 +125,36 @@ namespace EPS
         public string ReferencedName()
         {
             return this.GetType().ToString();
+        }
+
+        public void SetNetworkingConfig(NetworkSytemType type, string ip, int port)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public bool IsConnected()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void OnClientConnected(System.Action<ulong> onClientConnectedCallback)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void OnTransportEvent(System.Action<NetworkEvent, ulong, System.ArraySegment<byte>, float> transportEventCallback)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public NetworkType GetNetworkingType()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public NetworkManager GetNetworkManager()
+        {
+            return NetworkManager.Singleton;
         }
     }
 }

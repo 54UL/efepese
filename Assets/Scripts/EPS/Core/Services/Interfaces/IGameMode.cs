@@ -1,5 +1,5 @@
 
-namespace EPS
+namespace EPS.Core
 {
     public interface IGameMode 
     {

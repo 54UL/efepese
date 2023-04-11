@@ -1,10 +1,9 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using EPS;
 using UnityEngine.InputSystem;
-using EPS.Core.Services.Implementations;
+using EPS.Core;
 
 public class LobbyView : MonoBehaviour, IUIView
 {
@@ -91,12 +90,12 @@ public class LobbyView : MonoBehaviour, IUIView
         if (connect)
         {
             //CHANGE BY MATCH START
-            gameNetworking.Start(netType, currentAddress, currentPort);
+            //gameNetworking.Start(netType, currentAddress, currentPort);
         }
         else
         {
             //MATCH END...
-            gameNetworking.Stop();
+            //gameNetworking.Stop();
         }
 
         yield return new WaitForFixedUpdate();
@@ -112,21 +111,21 @@ public class LobbyView : MonoBehaviour, IUIView
         currentAddress = this.ServerIpInputField.text.Trim();
         currentPort = int.Parse(this.ServerPortInputField.text);
 
-        if (!networkManager.IsConnectedClient)
-        {
-            LogInfo("Joning match...");
-            this.ToggleConnect.GetComponentInChildren<Text>().text = "Disconnect";
-            StartCoroutine(NetworkStatus(NetworkSytemType.CLIENT, true));
-        }
-        else
-        {
-            LogInfo("Player disconnected");
-            this.ToggleConnect.GetComponentInChildren<Text>().text = "Connect";
-            ConectionStatus = false;
-            StartCoroutine(NetworkStatus(NetworkSytemType.CLIENT, false));
-            EnableLobbyCamera(true);
-            RenderShell(true);
-        }
+        //if (!networkManager.IsConnectedClient)
+        //{
+        //    LogInfo("Joning match...");
+        //    this.ToggleConnect.GetComponentInChildren<Text>().text = "Disconnect";
+        //    StartCoroutine(NetworkStatus(NetworkSytemType.CLIENT, true));
+        //}
+        //else
+        //{
+        //    LogInfo("Player disconnected");
+        //    this.ToggleConnect.GetComponentInChildren<Text>().text = "Connect";
+        //    ConectionStatus = false;
+        //    StartCoroutine(NetworkStatus(NetworkSytemType.CLIENT, false));
+        //    EnableLobbyCamera(true);
+        //    RenderShell(true);
+        //}
     }
 
     //IUIView

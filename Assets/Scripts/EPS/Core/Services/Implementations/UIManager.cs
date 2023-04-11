@@ -8,7 +8,7 @@ using EPS.Foundation;
 
 
 //FUTURE TODOS:QUITAR TODO LO RELACIONADO CON EL VIEW STACK Y DEJARLO EN UN STACK PARA SIEMPRE(TODA LA APP)
-namespace EPS
+namespace EPS.Core
 {
     //REFACTOR MODELS
     public class UIManager : IUIManager, Foundation.IService

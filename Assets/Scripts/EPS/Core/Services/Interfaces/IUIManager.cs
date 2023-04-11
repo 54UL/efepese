@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using EPS.Api;
 
-namespace EPS
+namespace EPS.Core
 {
     public interface IUIManager
     {

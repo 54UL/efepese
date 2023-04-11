@@ -5,7 +5,7 @@ using Object = UnityEngine.Object;
 using InputSystem;
 using EPS.Api;
 
-namespace EPS.Core.Services.Implementations
+namespace EPS.Core
 {
     public class MatchManager : IMatchManager, Foundation.IService
     {
@@ -13,8 +13,32 @@ namespace EPS.Core.Services.Implementations
         private INetworking Network { get; set; }
         private IUIManager  UIManager { get; set; }
         private MatchType   CurrentMatchType { get; set; }
+       
+        //IMatch Manager
+        public void StartMatch(IGameMode gamemode)
+        {
+            //Spawn players
+            //Start counting
+            //Start to check game rules...
+            throw new NotImplementedException();
+        }
 
-        //Match manager
+        public void EndMatch()
+        {
+            //throw new NotImplementedException();
+        }
+
+        public void SpawnPlayer()
+        {
+            //throw new NotImplementedException();
+        }
+
+        public void KillPlayer(int playerId)
+        {
+            //throw new NotImplementedException();
+        }
+
+        //Match manager impl
         public void SetGameMode(IGameMode gameMode)
         {
             CurrentGameMode = gameMode;
@@ -67,12 +91,13 @@ namespace EPS.Core.Services.Implementations
         //IService
         public string ReferencedName()
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
+            return this.GetType().ToString();
         }
 
         public void OnInit(DependencyManager manager)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         public void Loop()
@@ -94,5 +119,7 @@ namespace EPS.Core.Services.Implementations
         {
             return null;
         }
+
+        
     }
 }

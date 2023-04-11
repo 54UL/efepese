@@ -2,12 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using EPS;
 using Unity.Netcode;
 using UnityEngine.InputSystem;
 using Unity.Netcode.Transports.UNET;
 using System;
-using EPS.Core.Services.Implementations;
+
+
+using EPS;
+using EPS.Core;
 
 
 public class NetworkMatch : MonoBehaviour
@@ -45,7 +47,7 @@ public class NetworkMatch : MonoBehaviour
     private NetworkManager networkManager;
   
     //DEPENDENCIES
-    public EPS.INetworking gameNetworking;
+    public INetworking gameNetworking;
 
     public void SetUIHealth(double value)
     {
@@ -66,7 +68,6 @@ public class NetworkMatch : MonoBehaviour
         Health.enabled = !visible;
     }
 
-    
     IEnumerator NetworkStatus(NetworkSytemType netType,  bool connect = false)
     {
         if (connect)
@@ -131,26 +132,6 @@ public class NetworkMatch : MonoBehaviour
             EnableLobbyCamera(false);
             StartCoroutine(NetworkStatus(NetworkSytemType.HOST, true));
         });
-
-        networkManager.OnClientConnectedCallback += (ulong id) =>
-        {
-            if (networkManager.IsClient)
-            {
-                string welcomeMessage = string.Format(" joined..., welcome:[{0}]", id.ToString());
-                LogInfo(welcomeMessage);
-                RenderShell(false);
-                EnableLobbyCamera(false);
-                ConectionStatus = true;
-            }
-            else
-            {
-                LogInfo("not a client");
-                ConectionStatus = false;
-            }
-        };
-
-        var transport = networkManager.transform.GetComponent<UNetTransport>();
-        transport.OnTransportEvent += OnTransportEvent;
 
         LogInfo("efepese game ready...");
     }

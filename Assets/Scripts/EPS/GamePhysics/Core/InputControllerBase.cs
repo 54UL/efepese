@@ -1,5 +1,5 @@
 
-using EPS.Core.Services.Implementations;
+using EPS.Core;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using InputSystem;
@@ -8,9 +8,9 @@ namespace EPS.GamePhysics.Core
 {
     public class InputControllerBase : MonoBehaviour
     {
-        private PlayerInput _playerInput;
-        private InputService _inputService;
-        protected PlayerActions _inputActions;
+        public PlayerInput _playerInput;
+        public InputService _inputService;
+        public PlayerActions _inputActions;
 
         protected bool IsCurrentDeviceMouse => _playerInput.currentControlScheme == "KeyboardMouse";
         

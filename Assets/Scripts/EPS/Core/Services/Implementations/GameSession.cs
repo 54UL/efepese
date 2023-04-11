@@ -4,16 +4,44 @@ using UnityEngine.InputSystem;
 using Object = UnityEngine.Object;
 using InputSystem;
 
-namespace EPS.Core.Services.Implementations
+namespace EPS.Core
 {
-    public class GameSession: EPS.Foundation.IService
+    public class GameSession: IGameSession, EPS.Foundation.IService
     {
-        private EPS.Networking m_networking;
-        private EPS.IMatchManager MatchManager { get; set; }
+        private Networking gameNetworking;
+        private IMatchManager MatchManager { get; set; }
 
         //GameSession
-        public bool HostSession(string GameName)
+
+
+        void InitializeTestBedHost() 
         {
+            gameNetworking.Start(NetworkSytemType.HOST, "124.0.0.1", 5454);
+            var emptyMode = new EmptyMode();
+            
+            //MatchManager.StartMatch(emptyMode); NOT NEEDED UNTIL MANUAL SPAWN
+            // matchManager.StartMatch();
+
+            //Use an empty mode
+            //Spawn match
+            //Handle everything overther  
+        }
+
+        void InitializeHost() 
+        { 
+
+        }
+
+        public bool Host(string GameName)
+        {
+            if (GameName == "TEST_BED")
+            {
+                InitializeTestBedHost();
+            }
+            else
+            {
+                InitializeHost();
+            }
             //Start networking systems
             //Start Match systems fro creating a match
             //Show spawn screen UI
@@ -21,7 +49,10 @@ namespace EPS.Core.Services.Implementations
             return false;
         }
 
-        public bool JoinSession(uint id)
+      
+
+
+        public bool Join(uint id)
         {
             //Start networking systems
             //Start Match systems for joining a match
@@ -29,20 +60,11 @@ namespace EPS.Core.Services.Implementations
             return false;
         }
         
-        public void SoftRestart()
-        {
-
-        }
-
-        public void HardRestart()
-        {
-
-        }
         
         //IService
         public void OnInit(DependencyManager manager)
         {
-            m_networking = ServiceInjector.getSingleton<Networking>();
+            gameNetworking = ServiceInjector.getSingleton<Networking>();
             MatchManager = ServiceInjector.getSingleton<MatchManager>();
         }
 

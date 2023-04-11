@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace EPS
+namespace EPS.Core
 {
     public enum StackingLevel { NONE, GUI, CANVAS };
     

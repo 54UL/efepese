@@ -4,7 +4,7 @@ using UnityEngine.InputSystem;
 using Object = UnityEngine.Object;
 using InputSystem;
 
-namespace EPS.Core.Services.Implementations
+namespace EPS.Core
 {
     public class InputService : EPS.Foundation.IService
     {

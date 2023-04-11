@@ -1,6 +1,6 @@
+using EPS.Core;
 using System.Collections;
 using System.Collections.Generic;
-using EPS.Core.Services.Implementations;
 using UnityEngine;
 
 public class EntryPoint : MonoBehaviour
@@ -22,8 +22,9 @@ public class EntryPoint : MonoBehaviour
         EPS.ServiceInjector.SetDependencyManager(DependencySystem);
         //EPS.DependencyManager.RegisterService<EPS.GameMode>();
         EPS.DependencyManager.RegisterService<InputService>();
-        EPS.DependencyManager.RegisterService<EPS.Networking>();
-
+        EPS.DependencyManager.RegisterService<Networking>();
+        EPS.DependencyManager.RegisterService<MatchManager>();
+        EPS.DependencyManager.RegisterService<GameSession>();
     }
 
     private void InitializeSystems()

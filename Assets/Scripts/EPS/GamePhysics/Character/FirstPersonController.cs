@@ -100,6 +100,7 @@ namespace EPS.GamePhysics.Character
 				GroundedCheck();
 				Move();
 			}
+			
 			currentNetworkPlayer.SendInputs(characterMovement, characterRotation, aimOrentation, playerInputDirection);
 		}
 

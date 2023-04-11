@@ -1,15 +1,14 @@
 using UnityEngine;
 using EPS;
-
 public class TemplateInjector : MonoBehaviour 
 {
-    public EPS.IGameMode gameModeService;
+    public EPS.Core.IUIManager uiService;
 
     void Start()
     {
         //this.gameModeService = (EPS.IGameMode) EPS.ServiceInjector.Inject("EPS.GameMode"); <- OLD WAY OF INJECTING THINGS
-        this.gameModeService = ServiceInjector.getSingleton<EPS.GameMode>();
+        this.uiService = ServiceInjector.getSingleton<EPS.Core.UIManager>();
 
-        Debug.LogError("game mode servicie is null?" + (this.gameModeService == null).ToString());
+        Debug.LogError(uiService.ToString() + " service is null:" + (this.uiService == null).ToString());
     }
 }

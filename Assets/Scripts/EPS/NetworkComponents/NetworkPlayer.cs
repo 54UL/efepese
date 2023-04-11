@@ -45,7 +45,7 @@ namespace EPS
 
         private void SpawnPlayer()
         {
-            if (IsClient || isHost)
+            if (IsClient || IsHost)
             {
                 PlacePlayerAtServerRpc(SpawnPoint.transform.position, Quaternion.identity);
             }

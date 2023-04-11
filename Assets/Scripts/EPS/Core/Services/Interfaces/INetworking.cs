@@ -1,16 +1,13 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using EPS.Api;
-using Unity.Netcode;
+﻿using Unity.Netcode;
 using System;
 
-namespace EPS
+namespace EPS.Core
 {
     public enum NetworkType {CLIENT, HOST, SERVER };
 
     public interface INetworking
     {
+       NetworkManager GetNetworkManager();
        void SetNetworkingConfig(NetworkSytemType type, string ip, int port);
        bool Start(NetworkSytemType type, string ip, int port);
        void Stop();

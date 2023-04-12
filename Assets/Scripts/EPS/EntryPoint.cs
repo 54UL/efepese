@@ -21,6 +21,8 @@ public class EntryPoint : MonoBehaviour
         //Dependecy system initialization
         EPS.ServiceInjector.SetDependencyManager(DependencySystem);
         //EPS.DependencyManager.RegisterService<EPS.GameMode>();
+        
+        //EFPS BETA 1.0
         EPS.DependencyManager.RegisterService<InputService>();
         EPS.DependencyManager.RegisterService<Networking>();
         EPS.DependencyManager.RegisterService<MatchManager>();
@@ -44,12 +46,11 @@ public class EntryPoint : MonoBehaviour
         }
     }
 
-    // Use this for initialization
+    //ALL GAME CODE IS INITIALIZED BELOW (THIS IS THE ENTRY POINT OF ALL SERVICES)
     void Awake()
     {
         InitializeSystems();
     }
-
 
     void Start()
     {
@@ -65,6 +66,7 @@ public class EntryPoint : MonoBehaviour
         DependencySystem.ServiceLoop();
     }
 
+    // Notify on application quit
     void OnApplicationQuit()
     {
         DependencySystem.ShutDown();

@@ -101,7 +101,14 @@ namespace EPS.GamePhysics.Character
 				Move();
 			}
 			
-			currentNetworkPlayer.SendInputs(characterMovement, characterRotation, aimOrentation, playerInputDirection);
+			if (currentNetworkPlayer != null) 
+			{
+				currentNetworkPlayer.UpdateNetworkState(characterMovement, characterRotation, aimOrentation, playerInputDirection);
+			}
+            else
+            {
+				Debug.LogError("Networkplayer is null (not sending inputs)");
+            }
 		}
 
 		private void LateUpdate()
@@ -129,20 +136,10 @@ namespace EPS.GamePhysics.Character
 
 			_playerCameraTargetPitch += _inputActions.look.y * rotationSpeed * deltaTimeMultiplier;
 			_rotationVelocity = _inputActions.look.x * rotationSpeed * deltaTimeMultiplier;
-
-			// clamp our pitch rotation
 			_playerCameraTargetPitch = ClampAngle(_playerCameraTargetPitch, bottomClamp, topClamp);
 
-			// Update Cinemachine camera target pitch
 			aimOrentation = Quaternion.Euler(_playerCameraTargetPitch, 0.0f, 0.0f); 
-
-		 //TODO: MOVER AL NETWORK PLAYER
-		 //PlayerCamera.transform.localRotation = Quaternion.Euler(_playerCameraTargetPitch, 0.0f, 0.0f);
-
 			characterRotation = Vector3.up * _rotationVelocity;
-
-			//TODO: MOVER AL NETWORK PLAYER
-			//transform.Rotate(Vector3.up * _rotationVelocity); 
 		}
 
 		private void Move()

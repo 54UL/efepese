@@ -2,10 +2,16 @@ using Unity.Netcode;
 using UnityEngine;
 using EPS.GamePhysics.Character;
 
+
+//TODO: REFACTOR ALL THIS CODE TO MAKE IT GENERIC 
 namespace EPS
 {
     public class NetworkPlayer : NetworkBehaviour
     {
+
+        public bool LocalPlayerLookEnabled = true;
+
+        [Space(30)]
         //Game systems
         public WeaponSystem currentWeapon;
         public FirstPersonController fpp;
@@ -18,6 +24,8 @@ namespace EPS
         private static readonly int VelocityZ = Animator.StringToHash("VelocityZ");
         private static readonly int VelocityX = Animator.StringToHash("VelocityX");
         public NetworkMatch Hud;
+        public float AnimationSpeedFactor = 1;
+        public Vector3 CurrentAnimationVelocity;
 
         public override void OnNetworkSpawn()
         {
@@ -83,13 +91,26 @@ namespace EPS
             playerCamera.enabled = enabled;
             currentWeapon.enabled = enabled;
         }
-        
+        float currentVelocity;
+
         //TODO: AQUI DEBERIA DE IR TODO EL FLUJO DE DATOS AUTORITARIO (SE ENVIA AL SERVIDOR Y DEBE DE REGRESAR EL FEEDBACK DEL TRANSFORM) (NO USAR ClientTransforms autorativos)
-        public void SendInputs(Vector3 movement, Vector3 rotation, Quaternion aimOrentation, Vector3 inputDirection)
+        public void UpdateNetworkState(Vector3 movement, Vector3 rotation, Quaternion aimOrentation, Vector3 inputDirection)
         {
-            this.playerCamera.transform.localRotation = aimOrentation; // only pitch
-            this.transform.Rotate(rotation); // only yaw
-            cc.Move(movement);//player physics 
+            //local player camera control
+            if (LocalPlayerLookEnabled) 
+            {
+                this.playerCamera.transform.localRotation = aimOrentation;
+                this.transform.Rotate(rotation);
+            }
+           
+            //call move from unity characters controller api (to actually move the thing)
+            cc.Move(movement);
+           
+            ////BASIC ANIMATION INTERPOLATION
+            //CurrentAnimationVelocity.x = Mathf.SmoothDamp(CurrentAnimationVelocity.x, inputDirection.x, ref dampVelocity.x, Time.smoothDeltaTime * AnimationSpeedFactor);
+            //CurrentAnimationVelocity.z = Mathf.SmoothDamp(CurrentAnimationVelocity.z, inputDirection.z, ref dampVelocity.z, Time.smoothDeltaTime * AnimationSpeedFactor);
+            //Set animator values...
+
             animator.SetFloat(VelocityX, inputDirection.x);
             animator.SetFloat(VelocityZ, inputDirection.z);
         }

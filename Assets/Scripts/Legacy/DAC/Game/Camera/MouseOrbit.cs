@@ -55,7 +55,6 @@ public class MouseOrbit : MonoBehaviour
         }
         RawTargetY = Target.rotation.eulerAngles.y;
 
-
         //Lerped values
         LerpTargetY = Mathf.LerpAngle(LerpTargetY, RawTargetY, LookLerpSpeed * Time.fixedDeltaTime);
         LerpAxis = Vector2.Lerp(LerpAxis, RawAxis, LookLerpSpeed * Time.fixedDeltaTime);

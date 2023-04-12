@@ -3959,16 +3959,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 4908271324375206271}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 10e4c7dea881c71478f0dc7ffecf003d, type: 3}
+  m_Script: {fileID: 11500000, guid: 1506b931f5abc764b80630dfbaca4936, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  animator: {fileID: 9099595116102002769}
-  ikActive: 1
-  lookObj: {fileID: 97612477}
-  rightHandPivot: {fileID: 1411215981}
-  leftHandPivot: {fileID: 695442728}
-  rightHintPivot: {fileID: 946432014359832507}
-  leftHintPivot: {fileID: 16635947171638781}
+  animator: {fileID: 0}
+  ikActive: 0
+  lookObj: {fileID: 0}
+  rightHandPivot: {fileID: 0}
+  leftHandPivot: {fileID: 0}
+  rightHintPivot: {fileID: 0}
+  leftHintPivot: {fileID: 0}
   handsWight: 1
 --- !u!114 &6908318190170290917
 MonoBehaviour:
@@ -7058,6 +7058,8 @@ MonoBehaviour:
   SpawnPoint: {fileID: 5597570958345857155, guid: b9d246ee3aef4e541ac57252a664ec2e,
     type: 3}
   Hud: {fileID: 0}
+  AnimationSpeedFactor: 1
+  CurrentAnimationVelocity: {x: 0, y: 0, z: 0}
 --- !u!143 &8857065353848349926
 CharacterController:
   m_ObjectHideFlags: 0
@@ -7179,6 +7181,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9ed6250458caabf479d295615e97ea0e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _playerInput: {fileID: 0}
+  _inputActions: {fileID: 0}
   EnableLocalInput: 1
   IsClient: 0
   currentNetworkPlayer: {fileID: 0}
